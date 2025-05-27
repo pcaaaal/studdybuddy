@@ -30,9 +30,11 @@ export default function RootLayout({children}: {children: React.ReactNode}) {
 
 	return (
 		<html lang="en">
-			<body className="bg-gray-50 text-gray-800 relative">
+			<body className="bg-background text-foreground selection:bg-primary/20 flex min-h-full flex-col scroll-smooth antialiased">
 				<Header navItems={navItems} />
-				<main className="md:container px-8 mt-16 pt-8">{children}</main>
+				<main className="min-h-view-full flex w-full flex-col items-center justify-center pt-24">
+					{children}
+				</main>
 				<Toaster />
 			</body>
 		</html>
