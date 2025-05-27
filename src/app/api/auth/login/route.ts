@@ -20,6 +20,8 @@ export async function POST(req: Request) {
 			.collection('user')
 			.authWithPassword(email, password);
 
+		console.log('Authentication successful:', authData);
+
 		// Get authStore cookie value
 		const cookie = pb.authStore.exportToCookie({
 			httpOnly: true,
