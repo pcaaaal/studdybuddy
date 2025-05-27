@@ -12,16 +12,19 @@ export type StudyGroup = {
 
 export type ScheduleEvent = {
     title: string;
-    date: string; 
-    time: string; 
+    date: string;
+    time: string;
 };
 
 export type User = {
     id: string;
+    email: string;
     name: string;
+    avatar: string;
     subscribedGroups: string[];
     schedule?: ScheduleEvent[];
 };
+
 
 export type Event = {
     id: string;

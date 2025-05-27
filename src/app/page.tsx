@@ -1,100 +1,193 @@
-'use client';
-
-import { studyGroups } from '@/lib/data';
-
-const mockGroupTable = [
-  { name: 'Mathematics Study Group', room: 'Room 101', leader: 'Alice Johnson' },
-  { name: 'Physics Study Group', room: 'Room 102', leader: 'Bob Smith' },
-  { name: 'Chemistry Study Group', room: 'Room 103', leader: 'Charlie Brown' },
-];
-
-const mockBuddies = [
-  { name: 'Lena Maurer', img: '/frog.png' },
-  { name: 'Can Yilmaz', img: '/ghoster_efz.png' },
-  { name: 'Emily Roth', img: '/green_bunny.png' },
-  { name: 'Noah Keller', img: '/meta_ceo.png' },
-  { name: 'Mara Blum', img: '/mummy.png' },
-  { name: 'Jonares Fresi', img: '/godzilla.png' },
-  { name: 'Elia Weber', img: '/purple_sigma.png' },
-  { name: 'Lara Schmid', img: '/red_bunny.png' },
-  { name: 'Tim Müller', img: '/purple_ghost.png' },
-  { name: 'Anna Becker', img: '/orange_beetle.png' },
-  { name: 'Lukas Steiner', img: '/blue_aunt.png' },
-  { name: 'Nina Vogel', img: '/fish.png' },
-  { name: 'Tim Bachmann', img: '/green_unc.png' },
-  { name: 'Lisa Meier', img: '/bird.png' },
-  { name: 'David Keller', img: '/purple_thing.png' },
-  { name: 'Maraka Blumaka', img: '/yellow_mummy.png' },
-  { name: 'Jonas Frei', img: '/blue_ghost.png' },
-  { name: 'Amira Bachmann', img: '/ocker_ghost.png' },
-  { name: 'Sophie Gerber', img: '/rosette.png' }
-];
+import {getStudyBuddiesByUserId} from '../lib/collections/studybuddy';
+import {
+	getAllStudyGroups,
+	getStudyGroupsByUserId,
+} from '../lib/collections/studygroup';
+import {
+	Card,
+	CardHeader,
+	CardTitle,
+	CardDescription,
+	CardContent,
+} from '@/components/ui/card';
+import {
+	Table,
+	TableHeader,
+	TableRow,
+	TableHead,
+	TableBody,
+	TableCell,
+} from '@/components/ui/table';
+import Image from 'next/image';
+import {Badge} from '../components/ui/badge';
+import {getCurrentUserId} from '../lib/getCurrentUserId';
+import {getAllUsers, getUserByUserId} from '../lib/collections/user';
 
 const groupColors: Record<string, string> = {
-  math: 'bg-yellow-200',
-  bio: 'bg-pink-200',
-  chem: 'bg-green-200',
-  phys: 'bg-blue-200',
+	math: 'bg-yellow-200',
+	bio: 'bg-pink-200',
+	chem: 'bg-green-200',
+	phys: 'bg-blue-200',
 };
 
-export default function HomePage() {
-  return (
-    <div className="container mx-auto px-4 space-y-8">
-      <h1 className="text-5xl font-extrabold">Welcome Back, John</h1>
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="space-y-6">
-          <div className="bg-white shadow rounded p-4">
-            <h2 className="font-semibold text-xl mb-3">My Study Groups</h2>
-            <div className="overflow-x-auto">
-              <table className="min-w-full text-sm">
-                <thead className="border-b">
-                  <tr>
-                    <th className="text-left py-2">Name</th>
-                    <th className="text-left py-2">Room</th>
-                    <th className="text-left py-2">Group Leader</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {mockGroupTable.map((g, i) => (
-                    <tr key={i} className="border-t">
-                      <td className="py-2">{g.name}</td>
-                      <td className="py-2">{g.room}</td>
-                      <td className="py-2">{g.leader}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
+function capitalize(str: string) {
+	return str.charAt(0).toUpperCase() + str.slice(1);
+}
 
-          <div className="bg-white shadow rounded p-4">
-            <h2 className="font-semibold text-xl mb-3">My Study Buddies</h2>
-            <div className="flex flex-wrap gap-4">
-              {mockBuddies.map(buddy => (
-                <div key={buddy.name} className="flex flex-col items-center w-20">
-                  <img src={buddy.img} alt="" className="w-10 h-10 md:w-12 md:h-12 rounded-full" />
-                  <span className="text-xs mt-1 text-center">{buddy.name}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
+export default async function HomePage() {
+	const userId = await getCurrentUserId();
 
-        <div className="bg-white shadow rounded p-4">
-          <h2 className="font-semibold text-xl mb-4">Explore Study Groups</h2>
-          <div className="space-y-3">
-            {studyGroups.map(group => (
-              <div key={group.id} className={`p-4 rounded ${groupColors[group.id] || 'bg-gray-100'}`}>
-                <div className="flex justify-between items-start">
-                  <h3 className="font-bold">{group.name}</h3>
-                  <button className="text-xs bg-black text-white px-2 py-1 rounded">Match!</button>
-                </div>
-                <p className="text-sm mt-1">{group.description}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
+	if (!userId) {
+		return (
+			<div className="container mx-auto px-4 py-8">
+				<Card>
+					<CardHeader>
+						<CardTitle>Please log in to continue</CardTitle>
+						<CardDescription>
+							You need to be logged in to access this page.
+						</CardDescription>
+					</CardHeader>
+				</Card>
+			</div>
+		);
+	}
+	const user = await getUserByUserId(userId);
+	const myStudyGroups = await getStudyGroupsByUserId(userId);
+	const myStudyBuddies = await getStudyBuddiesByUserId(userId);
+	const studyGroups = await getAllStudyGroups();
+	const users = await getAllUsers();
+
+	console.log('Current User ID:', user);
+	console.log('User:', user);
+	console.log('My Study Groups:', myStudyGroups);
+	console.log('My Study Buddies:', myStudyBuddies);
+	console.log('All Study Groups:', studyGroups);
+	console.log('All Users:', users);
+
+	return (
+		<div className="container mx-auto px-4 space-y-8">
+			<h1 className="text-5xl font-extrabold">
+				Welcome Back, {capitalize(user.name || 'User')}
+			</h1>
+
+			<div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+				{/* My Study Groups */}
+				<Card>
+					<CardHeader>
+						<CardTitle>My Study Groups</CardTitle>
+					</CardHeader>
+					<CardContent>
+						{myStudyGroups.length === 0 ? (
+							<p className="text-muted-foreground text-xl">
+								You are not part of any study groups yet.
+							</p>
+						) : (
+							<Table>
+								<TableHeader>
+									<TableRow>
+										<TableHead>Name</TableHead>
+										<TableHead>Room</TableHead>
+										<TableHead>Group Leader</TableHead>
+									</TableRow>
+								</TableHeader>
+								<TableBody>
+									{myStudyGroups.map((group) => (
+										<TableRow key={group?.id}>
+											<TableCell>
+												{group?.name || 'N/A'}
+											</TableCell>
+											<TableCell>
+												{group?.room || 'N/A'}
+											</TableCell>
+											<TableCell>
+												{group?.leader || 'N/A'}
+											</TableCell>
+										</TableRow>
+									))}
+								</TableBody>
+							</Table>
+						)}
+					</CardContent>
+				</Card>
+
+				{/* My Study Buddies */}
+				<Card>
+					<CardHeader>
+						<CardTitle>My Study Buddies</CardTitle>
+					</CardHeader>
+					<CardContent>
+						{myStudyBuddies.length === 0 ? (
+							<p className="text-muted-foreground text-xl">
+								You have no study buddies yet.
+							</p>
+						) : (
+							<div className="flex flex-wrap gap-4">
+								{myStudyBuddies.map((buddy) => (
+									<div
+										key={buddy?.id}
+										className="flex flex-col items-center w-20"
+									>
+										<Image
+											src={
+												buddy?.img ||
+												'/default-avatar.png'
+											}
+											width={40}
+											height={40}
+											alt={buddy?.name || 'Study Buddy'}
+											className="w-10 h-10 md:w-12 md:h-12 rounded-full object-cover"
+										/>
+										<span className="text-xs mt-1 text-center">
+											{buddy?.name || 'Unknown'}
+										</span>
+									</div>
+								))}
+							</div>
+						)}
+					</CardContent>
+				</Card>
+
+				{/* Explore Study Groups */}
+				<Card className="lg:col-span-2">
+					<CardHeader>
+						<CardTitle>Explore Study Groups</CardTitle>
+					</CardHeader>
+					<CardContent>
+						{studyGroups.length === 0 ? (
+							<p className="text-muted-foreground">
+								No study groups available at the moment.
+							</p>
+						) : (
+							<div className="space-y-3">
+								{studyGroups.map((group) => {
+									const colorClass =
+										groupColors[
+											group.category?.toLowerCase()
+										] || 'bg-gray-100';
+
+									return (
+										<div
+											key={group.id}
+											className={`${colorClass} p-4 rounded`}
+										>
+											<div className="flex justify-between items-start">
+												<h3 className="font-bold">
+													{group.name}
+												</h3>
+												<Badge>Match!</Badge>
+											</div>
+											<p className="text-sm mt-1">
+												{group.description ||
+													'No description available.'}
+											</p>
+										</div>
+									);
+								})}
+							</div>
+						)}
+					</CardContent>
+				</Card>
+			</div>
+		</div>
+	);
 }

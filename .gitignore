@@ -43,5 +43,5 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
-merged_output.txt
-merged_output.txt
+
+package-lock.json
