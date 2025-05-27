@@ -8,6 +8,7 @@ import {
 	NavigationMenuList,
 } from '@radix-ui/react-navigation-menu';
 import LogoutButton from './LogoutButton';
+import {getCurrentUserId} from '../../lib/getCurrentUserId';
 
 type NavItem = {
 	name: string;
@@ -19,7 +20,8 @@ interface HeaderProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 const Header = React.forwardRef<HTMLDivElement, HeaderProps>(
-	({className, navItems}, ref) => {
+	async ({className, navItems}, ref) => {
+		const userId = getCurrentUserId();
 		return (
 			<header
 				className={cn(
@@ -57,7 +59,7 @@ const Header = React.forwardRef<HTMLDivElement, HeaderProps>(
 								</NavigationMenuList>
 							</NavigationMenu>
 						</nav>
-						<LogoutButton />
+						{(await userId) && <LogoutButton />}
 					</div>
 					<div className="flex flex-1 items-center justify-end gap-4 md:flex-none"></div>
 				</div>
