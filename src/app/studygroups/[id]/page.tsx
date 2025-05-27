@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
 import { useParams } from 'next/navigation';
@@ -5,42 +6,75 @@ import { useEffect, useState } from 'react';
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
 
-const mockGroups = [
-    {
-        id: 'math',
-        name: 'Mathematical Insights Circle',
-        description: 'Weekly sessions on problem-solving, theory, and mathematical exploration.',
-        members: ['Alice', 'Bob', 'Charlie'],
-        events: [
-            { title: 'Algebra Drill', date: '2025-06-01' },
-            { title: 'Calculus Talk', date: '2025-06-04' }
-        ]
-    },
-    {
-        id: 'physics',
-        name: 'Physics Explorers Forum',
-        description: 'Hands-on physics learning with discussions and exam prep.',
-        members: ['Dora', 'Eli', 'Finn'],
-        events: [
-            { title: 'Kinematics Practice', date: '2025-06-02' }
-        ]
-    }
-];
-
 export default function StudyGroupDetailPage() {
     const { id } = useParams();
-    const [group, setGroup] = useState<unknown>(null);
+    const [group, setGroup] = useState<any>(null);
+    const [members, setMembers] = useState<any[]>([]);
+    const [events, setEvents] = useState<any[]>([]);
     const [subscribed, setSubscribed] = useState(false);
+    const userId = 1;
 
     useEffect(() => {
-        const normalizedId = typeof id === 'string' ? id.toLowerCase() : '';
-        const found = mockGroups.find((g) =>
-            g.id === normalizedId || g.name.toLowerCase().replace(/\s+/g, '-') === normalizedId
-        );
-        setGroup(found);
+        if (!id) return;
+
+        fetch(`http://localhost:3001/study-groups/${id}`)
+            .then(res => res.json())
+            .then((found) => {
+                if (found) {
+                    fetch(`http://localhost:3001/group-members/${id}`)
+                        .then(res => res.json())
+                        .then(membersList => {
+                            setMembers(membersList);
+                            setGroup({ ...found, members: membersList.map((m: any) => m.name).join(', ') });
+                            const isMember = membersList.some((m: any) => m.id === userId);
+                            setSubscribed(isMember);
+                        });
+                }
+            });
+
+        fetch(`http://localhost:3001/events/${id}`)
+            .then(res => res.json())
+            .then(setEvents);
     }, [id]);
 
-    const toggleSubscription = () => setSubscribed((prev) => !prev);
+    const toggleSubscription = () => {
+        const newState = !subscribed;
+        setSubscribed(newState);
+
+        if (newState) {
+            fetch('http://localhost:3001/group-members', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ user_id: userId, group_id: id })
+            })
+                .then(res => res.json())
+                .then(() => {
+                    fetch(`http://localhost:3001/group-members/${id}`)
+                        .then(res => res.json())
+                        .then(data => {
+                            setMembers(data);
+                            if (group) {
+                                setGroup({ ...group, members: data.map((m: any) => m.name).join(', ') });
+                            }
+                        });
+                });
+        } else {
+            fetch(`http://localhost:3001/group-members/${id}/${userId}`, {
+                method: 'DELETE'
+            })
+                .then(res => res.json())
+                .then(() => {
+                    fetch(`http://localhost:3001/group-members/${id}`)
+                        .then(res => res.json())
+                        .then(data => {
+                            setMembers(data);
+                            if (group) {
+                                setGroup({ ...group, members: data.map((m: any) => m.name).join(', ') });
+                            }
+                        });
+                });
+        }
+    };
 
     if (!group) return <p>Loading...</p>;
 
@@ -55,8 +89,8 @@ export default function StudyGroupDetailPage() {
                 <div className="bg-white shadow rounded p-6">
                     <h2 className="text-xl font-semibold mb-2">Members</h2>
                     <ul className="list-disc pl-5 text-sm">
-                        {group.members.map((member: string) => (
-                            <li key={member}>{member}</li>
+                        {members.map((member) => (
+                            <li key={member.id}>{member.name}</li>
                         ))}
                     </ul>
                 </div>
@@ -76,7 +110,7 @@ export default function StudyGroupDetailPage() {
                 <div className="scale-[0.9] origin-top-left">
                     <Calendar
                         tileContent={({ date }) => {
-                            const foundEvent = group.events.find((event: { date: string | number | Date; }) =>
+                            const foundEvent = events.find(event =>
                                 new Date(event.date).toDateString() === date.toDateString()
                             );
                             return foundEvent ? (

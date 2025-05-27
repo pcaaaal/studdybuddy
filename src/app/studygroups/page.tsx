@@ -1,44 +1,31 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
-import { useState } from 'react';
-
-const allGroups = [
-    {
-        id: 'math',
-        name: 'Mathematical Insights Circle',
-        description: 'Weekly sessions on problem-solving, theory, and mathematical exploration.',
-        audience: 'Undergraduates, graduate students, or anyone passionate about mathematical thinking.'
-    },
-    {
-        id: 'physics',
-        name: 'Physics Explorers Forum',
-        description: 'Hands-on physics learning with discussions and exam prep.',
-        audience: 'Physics and engineering students looking for deeper understanding and practical experience.'
-    },
-    {
-        id: 'chem',
-        name: 'Chem Collective',
-        description: 'Collaborative chemistry sessions with demos and problem sets.',
-        audience: 'Chemistry majors, pre-med students, and anyone curious about experimental and theoretical chemistry.'
-    },
-    {
-        id: 'bio',
-        name: 'Life Sciences Roundtable',
-        description: 'A deep dive into biology with quizzes, papers, and discussions.',
-        audience: 'Biology and health sciences students and anyone curious about living systems.'
-    },
-    {
-        id: 'history',
-        name: 'Historical Perspectives Circle',
-        description: 'Interactive history sessions exploring events, sources, and analysis.',
-        audience: 'History enthusiasts, humanities students, and critical thinkers.'
-    }
-];
+import { useState, useEffect } from 'react';
 
 export default function StudyGroupsPage() {
     const [search, setSearch] = useState('');
+    const [groups, setGroups] = useState<any[]>([]);
 
-    const filteredGroups = allGroups.filter(group =>
+    useEffect(() => {
+        fetch('http://localhost:3001/study-groups')
+            .then(res => res.json())
+            .then(async (data) => {
+                const groupsWithMembers = await Promise.all(
+                    data.map(async (group: any) => {
+                        const membersRes = await fetch(`http://localhost:3001/group-members/${group.id}`);
+                        const membersList = await membersRes.json();
+                        return {
+                            ...group,
+                            members: membersList.map((m: any) => m.name).join(', ')
+                        };
+                    })
+                );
+                setGroups(groupsWithMembers);
+            });
+    }, []);
+
+    const filteredGroups = groups.filter((group: any) =>
         group.name.toLowerCase().includes(search.toLowerCase())
     );
 
@@ -65,11 +52,11 @@ export default function StudyGroupsPage() {
                             <tr className="border-b border-gray-300">
                                 <th className="py-3 px-4 font-semibold">Name</th>
                                 <th className="py-3 px-4 font-semibold">Description</th>
-                                <th className="py-3 px-4 font-semibold">Audience</th>
+                                <th className="py-3 px-4 font-semibold">Members</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {filteredGroups.map((group, index) => (
+                            {filteredGroups.map((group: any, index) => (
                                 <tr
                                     key={index}
                                     className="border-t border-gray-200 hover:bg-gray-50 cursor-pointer"
@@ -79,19 +66,11 @@ export default function StudyGroupsPage() {
                                 >
                                     <td className="py-3 px-4 text-blue-600 underline">{group.name}</td>
                                     <td className="py-3 px-4">{group.description}</td>
-                                    <td className="py-3 px-4">{group.audience}</td>
+                                    <td className="py-3 px-4">{group.members || '-'}</td>
                                 </tr>
                             ))}
                         </tbody>
                     </table>
-                </div>
-            </div>
-
-            <div className="space-y-2">
-                <h2 className="text-xl font-semibold">My Study Groups</h2>
-                <div className="bg-yellow-100 text-black px-6 py-4 rounded shadow w-fit">
-                    <strong>Mathematical Insights Circle</strong><br />
-                    Weekly sessions on problem-solving, theory, and mathematical exploration.
                 </div>
             </div>
         </div>

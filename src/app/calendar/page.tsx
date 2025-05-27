@@ -1,45 +1,41 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
-import { useState } from 'react';
-
-const currentUser = {
-    subscribedGroups: ['math', 'physics']
-};
-
-const studyGroups = [
-    {
-        id: 'math',
-        name: 'Mathematical Insights Circle',
-        color: 'bg-yellow-200',
-        schedule: [
-            { weekday: 1, time: '14:00' }, // Monday
-            { weekday: 3, time: '10:00' }  // Wednesday
-        ]
-    },
-    {
-        id: 'physics',
-        name: 'Physics Explorers Forum',
-        color: 'bg-blue-200',
-        schedule: [
-            { weekday: 2, time: '13:00' } // Tuesday
-        ]
-    },
-    {
-        id: 'chem',
-        name: 'Chem Collective',
-        color: 'bg-green-200',
-        schedule: [
-            { weekday: 4, time: '09:00' } // Thursday
-        ]
-    }
-];
-
-const month = 4;
-const year = 2025;
-const daysInMonth = 31;
+import { useState, useEffect } from 'react';
 
 export default function CalendarPage() {
-    const [activeGroupFilters, setActiveGroupFilters] = useState(currentUser.subscribedGroups);
+    const [groups, setGroups] = useState<any[]>([]);
+    const [activeGroupFilters, setActiveGroupFilters] = useState<string[]>([]);
+    const [currentMonth, setCurrentMonth] = useState(5); // Mai (0-basiert)
+    const [currentYear, setCurrentYear] = useState(2025);
+
+    useEffect(() => {
+        const userId = 1;
+        fetch(`http://localhost:3001/user-study-groups/${userId}`)
+            .then(res => res.json())
+            .then(async (groupList) => {
+                setActiveGroupFilters(groupList.map((g: any) => g.id.toString()));
+
+                const detailedGroups = await Promise.all(
+                    groupList.map(async (g: any) => {
+                        const eventsRes = await fetch(`http://localhost:3001/events/${g.id}`);
+                        const events = await eventsRes.json();
+                        return {
+                            id: g.id,
+                            name: g.name,
+                            color: g.color || 'bg-gray-200',
+                            schedule: events.map((e: any) => ({
+                                weekday: new Date(e.date).getDay(),
+                                time: e.time,
+                                date: e.date
+                            }))
+                        };
+                    })
+                );
+
+                setGroups(detailedGroups);
+            });
+    }, []);
 
     const handleToggleGroup = (groupId: string) => {
         setActiveGroupFilters((prev) =>
@@ -47,15 +43,19 @@ export default function CalendarPage() {
         );
     };
 
+    const getDaysInMonth = (year: number, month: number) => {
+        return new Date(year, month + 1, 0).getDate();
+    };
+
     const getEventsForDay = (day: number) => {
-        const date = new Date(year, month, day);
-        const weekday = date.getDay();
-        return studyGroups
-            .filter((group) => activeGroupFilters.includes(group.id))
+        const dateObj = new Date(currentYear, currentMonth, day);
+        const isoDate = dateObj.toISOString().split('T')[0];
+        return groups
+            .filter((group) => activeGroupFilters.includes(group.id.toString()))
             .flatMap((group) =>
                 group.schedule
-                    .filter((s) => s.weekday === weekday)
-                    .map((s) => ({
+                    .filter((s: any) => s.date === isoDate)
+                    .map((s: any) => ({
                         id: group.id,
                         title: group.name,
                         time: s.time,
@@ -64,17 +64,36 @@ export default function CalendarPage() {
             );
     };
 
+    const handleMonthChange = (dir: 'next' | 'prev') => {
+        let newMonth = currentMonth + (dir === 'next' ? 1 : -1);
+        let newYear = currentYear;
+
+        if (newMonth < 0) {
+            newMonth = 11;
+            newYear--;
+        } else if (newMonth > 11) {
+            newMonth = 0;
+            newYear++;
+        }
+
+        setCurrentMonth(newMonth);
+        setCurrentYear(newYear);
+    };
+
+    const daysInMonth = getDaysInMonth(currentYear, currentMonth);
+    const firstDay = new Date(currentYear, currentMonth, 1).getDay();
+
     return (
         <div className="space-y-8">
             <h1 className="text-5xl font-extrabold">Calendar</h1>
-            <p className="text-gray-600">Subscribed learning groups show up here. Toggle visibility below.</p>
+            <p className="text-gray-600">Events of your subscribed groups. Switch months & toggle groups.</p>
 
             <div className="flex flex-wrap gap-2">
-                {studyGroups.map((group) => (
+                {groups.map((group) => (
                     <button
                         key={group.id}
-                        onClick={() => handleToggleGroup(group.id)}
-                        className={`px-4 py-1 rounded border ${activeGroupFilters.includes(group.id)
+                        onClick={() => handleToggleGroup(group.id.toString())}
+                        className={`px-4 py-1 rounded border ${activeGroupFilters.includes(group.id.toString())
                                 ? 'bg-blue-600 text-white'
                                 : 'bg-white text-black border-gray-300'
                             }`}
@@ -82,6 +101,24 @@ export default function CalendarPage() {
                         {group.name}
                     </button>
                 ))}
+            </div>
+
+            <div className="flex justify-between items-center">
+                <button
+                    className="bg-gray-200 text-black px-4 py-2 rounded"
+                    onClick={() => handleMonthChange('prev')}
+                >
+                    ← Voriger Monat
+                </button>
+                <span className="text-lg font-semibold">
+                    {new Date(currentYear, currentMonth).toLocaleString('default', { month: 'long' })} {currentYear}
+                </span>
+                <button
+                    className="bg-gray-200 text-black px-4 py-2 rounded"
+                    onClick={() => handleMonthChange('next')}
+                >
+                    Nächster Monat →
+                </button>
             </div>
 
             <div className="bg-white shadow rounded p-6">
@@ -92,6 +129,9 @@ export default function CalendarPage() {
                 </div>
 
                 <div className="grid grid-cols-7 gap-2 text-sm">
+                    {Array.from({ length: firstDay }).map((_, index) => (
+                        <div key={`empty-${index}`} className="h-28" />
+                    ))}
                     {Array.from({ length: daysInMonth }).map((_, index) => {
                         const day = index + 1;
                         const events = getEventsForDay(day);
