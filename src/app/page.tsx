@@ -1,6 +1,7 @@
 import {getStudyBuddiesByUserId} from '../lib/collections/studybuddy';
 import {
 	getAllStudyGroups,
+	getLocationsFromStudyGroup,
 	getStudyGroupsByUserId,
 } from '../lib/collections/studygroup';
 import {
@@ -21,7 +22,7 @@ import {
 import Image from 'next/image';
 import {Badge} from '../components/ui/badge';
 import {getCurrentUserId} from '../lib/getCurrentUserId';
-import {getAllUsers, getUserByUserId} from '../lib/collections/user';
+import {getUserByUserId} from '../lib/collections/user';
 
 const groupColors: Record<string, string> = {
 	math: 'bg-yellow-200',
@@ -55,21 +56,14 @@ export default async function HomePage() {
 	const myStudyGroups = await getStudyGroupsByUserId(userId);
 	const myStudyBuddies = await getStudyBuddiesByUserId(userId);
 	const studyGroups = await getAllStudyGroups();
-	const users = await getAllUsers();
 
-	console.log('Current User ID:', user);
-	console.log('User:', user);
-	console.log('My Study Groups:', myStudyGroups);
-	console.log('My Study Buddies:', myStudyBuddies);
-	console.log('All Study Groups:', studyGroups);
-	console.log('All Users:', users);
+	console.log('StudyGroups:', studyGroups);
 
 	return (
 		<div className="container mx-auto px-4 space-y-8">
 			<h1 className="text-5xl font-extrabold">
 				Welcome Back, {capitalize(user.name || 'User')}
 			</h1>
-
 			<div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 				{/* My Study Groups */}
 				<Card>
@@ -86,7 +80,7 @@ export default async function HomePage() {
 								<TableHeader>
 									<TableRow>
 										<TableHead>Name</TableHead>
-										<TableHead>Room</TableHead>
+										<TableHead>Location</TableHead>
 										<TableHead>Group Leader</TableHead>
 									</TableRow>
 								</TableHeader>
@@ -97,10 +91,21 @@ export default async function HomePage() {
 												{group?.name || 'N/A'}
 											</TableCell>
 											<TableCell>
-												{group?.room || 'N/A'}
+												{getLocationsFromStudyGroup(
+													group,
+												).map((location) => (
+													<span key={location.id}>
+														{location.school} -{' '}
+														{location.room}
+													</span>
+												)) || 'N/A'}
 											</TableCell>
 											<TableCell>
-												{group?.leader || 'N/A'}
+												{group?.expand?.leader?.id ===
+												user.id
+													? 'You'
+													: group?.expand?.leader
+															?.name || 'N/A'}
 											</TableCell>
 										</TableRow>
 									))}
