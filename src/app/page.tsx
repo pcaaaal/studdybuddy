@@ -1,6 +1,5 @@
-'use client';
-
 import {studyGroups} from '@/lib/data';
+import {getCurrentUser} from '../lib/getCurrentUser';
 
 const mockGroupTable = [
 	{
@@ -31,10 +30,27 @@ const groupColors: Record<string, string> = {
 	phys: 'bg-blue-200',
 };
 
-export default function HomePage() {
+export default async function HomePage() {
+	const user = await getCurrentUser();
+	if (!user) {
+		return (
+			<div className="container mx-auto px-4 py-8">
+				<h1 className="text-3xl font-bold mb-4">
+					Please log in to continue
+				</h1>
+				<p className="text-gray-600">
+					You need to be logged in to access this page.
+				</p>
+			</div>
+		);
+	}
+
 	return (
 		<div className="container mx-auto px-4 space-y-8">
-			<h1 className="text-5xl font-extrabold">Welcome Back, John</h1>
+			<h1 className="text-5xl font-extrabold">
+				Welcome Back,{' '}
+				{user.name.charAt(0).toUpperCase() + user.name.slice(1)}
+			</h1>
 			<div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 				<div className="space-y-6">
 					<div className="bg-white shadow rounded p-4">
