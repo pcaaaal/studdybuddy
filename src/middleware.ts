@@ -3,7 +3,7 @@ import type {NextRequest} from 'next/server';
 import {pb} from './lib/pocketbase';
 
 // Toggle auth middleware for dev or preview environments
-const isDev = true;
+const isDev = false;
 
 export async function middleware(req: NextRequest) {
 	const {pathname} = req.nextUrl;

@@ -7,6 +7,7 @@ import {
 	NavigationMenuLink,
 	NavigationMenuList,
 } from '@radix-ui/react-navigation-menu';
+import LogoutButton from './LogoutButton';
 
 type NavItem = {
 	name: string;
@@ -37,7 +38,7 @@ const Header = React.forwardRef<HTMLDivElement, HeaderProps>(
 						StuddyBuddy
 					</Link>
 					{/* Desktop Navigation - hidden on mobile */}
-					<div className="hidden md:absolute md:top-1/2 md:left-1/2 md:flex md:flex-1 md:-translate-x-1/2 md:-translate-y-1/2">
+					<div className="hidden md:flex flex-1 justify-end gap-8">
 						<nav>
 							<NavigationMenu>
 								<NavigationMenuList className="flex items-center space-x-4">
@@ -56,6 +57,7 @@ const Header = React.forwardRef<HTMLDivElement, HeaderProps>(
 								</NavigationMenuList>
 							</NavigationMenu>
 						</nav>
+						<LogoutButton />
 					</div>
 					<div className="flex flex-1 items-center justify-end gap-4 md:flex-none"></div>
 				</div>
