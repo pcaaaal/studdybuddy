@@ -12,9 +12,12 @@ export type StudyGroup = {
 
 export type User = {
     id: string;
+    email: string;
     name: string;
-    subscribedGroups: string[];
-};
+    avatar: string;
+    subscribedGroups?: any[];
+  };
+
 export type Event = {
     id: string;
     title: string;

@@ -1,7 +1,6 @@
 "use client";
 
 import * as React from "react";
-import PocketBase from "pocketbase";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -20,56 +19,29 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { MoreHorizontal } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-
-const pb = new PocketBase(process.env.NEXT_PUBLIC_PB_URL);
-
-// Typ für Benutzer definieren
-type User = {
-  id: string;
-  email: string;
-  name: string;
-  avatar: string;
-};
+import { User } from "@/lib/types";
 
 export default function ProfilePage() {
   const [isEditing, setIsEditing] = React.useState(false);
-  const [profile, setProfile] = React.useState<User | null>(null);
+  const [profile, setProfile] = React.useState<any>(null);
   const [studyGroups, setStudyGroups] = React.useState<any[]>([]);
   const [studyBuddies, setStudyBuddies] = React.useState<any[]>([]);
 
   React.useEffect(() => {
     const fetchData = async () => {
       try {
-        // Fetch user data
-        const response = await pb.collection("_pb_users_auth_").authRefresh();
-        const user = response as unknown as User; // Typcasting
-        setProfile(user);
-  
-        // Fetch study groups
-        const groups = await pb.collection("user_studygroup").getFullList({
-          filter: `user="${user.id}"`,
-          expand: "studygroup",
-        });
-        setStudyGroups(
-          groups
-            .map((g) => g.expand?.studygroup) // Überprüfen, ob expand definiert ist
-            .filter((group) => group !== undefined) // Entfernen von undefined-Werten
-        );
-  
-        // Fetch study buddies
-        const buddies = await pb.collection("studybuddy").getFullList({
-          filter: `user_a="${user.id}" || user_b="${user.id}"`,
-          expand: "user_a,user_b",
-        });
-        setStudyBuddies(
-          buddies
-            .map((b) =>
-              b.expand?.user_a?.id === user.id ? b.expand?.user_b : b.expand?.user_a
-            )
-            .filter((buddy) => buddy !== undefined) // Entfernen von undefined-Werten
-        );
+        const response = await fetch("/api/profile");
+        if (!response.ok) {
+          console.error("Failed to fetch profile data");
+          return;
+        }
+
+        const data = await response.json();
+        setProfile(data.user);
+        setStudyGroups(data.studyGroups);
+        setStudyBuddies(data.studyBuddies);
       } catch (error) {
-        console.error("Error fetching data:", error);
+        console.error("Error fetching profile data:", error);
       }
     };
 
@@ -80,7 +52,7 @@ export default function ProfilePage() {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setProfile((prev) => (prev ? { ...prev, [name]: value } : null));
+    setProfile((prev: User | null) => (prev ? { ...prev, [name]: value } : null));
   };
 
   if (!profile) {
