@@ -10,26 +10,18 @@ export type StudyGroup = {
     }[];
 };
 
-export type ScheduleEvent = {
-    title: string;
-    date: string;
-    time: string;
-};
-
 export type User = {
     id: string;
     email: string;
     name: string;
     avatar: string;
-    subscribedGroups: string[];
-    schedule?: ScheduleEvent[];
-};
-
+    subscribedGroups?: any[];
+  };
 
 export type Event = {
     id: string;
     title: string;
-    date: string;
+    date: string; 
     time: string;
-    color: string;
+    color: string; 
 };
