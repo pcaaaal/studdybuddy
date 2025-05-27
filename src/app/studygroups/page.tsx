@@ -1,77 +1,69 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 export default function StudyGroupsPage() {
-    const [search, setSearch] = useState('');
     const [groups, setGroups] = useState<any[]>([]);
+    const [search, setSearch] = useState('');
+    const [sortKey, setSortKey] = useState<'name' | 'members'>('name');
 
     useEffect(() => {
-        fetch('http://localhost:3001/study-groups')
+        fetch('http://localhost:3001/study-groups-with-members')
             .then(res => res.json())
-            .then(async (data) => {
-                const groupsWithMembers = await Promise.all(
-                    data.map(async (group: any) => {
-                        const membersRes = await fetch(`http://localhost:3001/group-members/${group.id}`);
-                        const membersList = await membersRes.json();
-                        return {
-                            ...group,
-                            members: membersList.map((m: any) => m.name).join(', ')
-                        };
-                    })
-                );
-                setGroups(groupsWithMembers);
-            });
+            .then(data => setGroups(data));
     }, []);
 
-    const filteredGroups = groups.filter((group: any) =>
-        group.name.toLowerCase().includes(search.toLowerCase())
-    );
+    const filteredGroups = groups
+        .filter(group => group.name.toLowerCase().includes(search.toLowerCase()))
+        .sort((a, b) => {
+            if (sortKey === 'name') return a.name.localeCompare(b.name);
+            if (sortKey === 'members') return b.members.length - a.members.length;
+            return 0;
+        });
 
     return (
-        <div className="space-y-10">
-            <h1 className="text-5xl font-extrabold">Study Groups</h1>
+        <div className="space-y-8 max-w-5xl mx-auto">
+            <h1 className="text-5xl font-extrabold text-center">Study Groups</h1>
 
-            <div className="bg-white shadow rounded-lg p-6">
-                <h2 className="text-xl font-semibold mb-4">All Study Groups</h2>
-                <div className="flex gap-2 mb-4">
-                    <input
-                        type="text"
-                        placeholder="Search study groups..."
-                        className="border border-gray-300 rounded px-4 py-2 w-full"
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                    />
-                    <button className="bg-black text-white px-4 py-2 rounded">Search</button>
-                </div>
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                <input
+                    type="text"
+                    placeholder="Search study groups..."
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    className="w-full sm:w-1/2 border border-gray-300 px-4 py-2 rounded shadow"
+                />
+                <select
+                    value={sortKey}
+                    onChange={(e) => setSortKey(e.target.value as any)}
+                    className="px-4 py-2 border border-gray-300 rounded shadow"
+                >
+                    <option value="name">Sort by Name</option>
+                    <option value="members">Sort by Members</option>
+                </select>
+            </div>
 
-                <div className="overflow-x-auto">
-                    <table className="min-w-full table-auto text-left">
-                        <thead>
-                            <tr className="border-b border-gray-300">
-                                <th className="py-3 px-4 font-semibold">Name</th>
-                                <th className="py-3 px-4 font-semibold">Description</th>
-                                <th className="py-3 px-4 font-semibold">Members</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {filteredGroups.map((group: any, index) => (
-                                <tr
-                                    key={index}
-                                    className="border-t border-gray-200 hover:bg-gray-50 cursor-pointer"
-                                    onClick={() =>
-                                        window.location.href = `/studygroups/${group.id}`
-                                    }
-                                >
-                                    <td className="py-3 px-4 text-blue-600 underline">{group.name}</td>
-                                    <td className="py-3 px-4">{group.description}</td>
-                                    <td className="py-3 px-4">{group.members || '-'}</td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {filteredGroups.map((group, index) => (
+                    <div
+                        key={index}
+                        className="flex bg-white rounded-xl shadow-md hover:shadow-lg transition cursor-pointer border border-gray-100 overflow-hidden"
+                        onClick={() => window.location.href = `/studygroups/${group.id}`}
+                    >
+                        <div
+                            className="w-2"
+                            style={{ backgroundColor: group.color || '#E5E7EB' }}
+                        />
+
+                        {}
+                        <div className="p-5 flex-1">
+                            <h2 className="text-xl font-bold text-blue-600 mb-2">{group.name}</h2>
+                            <p className="text-sm text-gray-600 mb-3">{group.description}</p>
+                            <p className="text-xs text-gray-400">👥 {group.members?.join(', ') || 'No members yet'}</p>
+                        </div>
+                    </div>
+                ))}
             </div>
         </div>
     );

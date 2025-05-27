@@ -96,6 +96,65 @@ app.get('/events/:groupId', (req, res) => {
     });
 });
 
+
+app.get('/study-groups-with-members', (req, res) => {
+    const groupQuery = 'SELECT * FROM study_groups';
+
+    db.all(groupQuery, [], (err, groups) => {
+        if (err) return res.status(500).json({ error: err.message });
+
+        const getMembersForGroup = (groupId) => {
+            return new Promise((resolve, reject) => {
+                const query = `
+                    SELECT u.name FROM users u
+                    JOIN group_members gm ON u.id = gm.user_id
+                    WHERE gm.group_id = ?
+                `;
+                db.all(query, [groupId], (err, rows) => {
+                    if (err) return reject(err);
+                    const memberNames = rows.map((r) => r.name);
+                    resolve(memberNames);
+                });
+            });
+        };
+
+        Promise.all(
+            groups.map(async (group) => ({
+                ...group,
+                members: await getMembersForGroup(group.id)
+            }))
+        )
+            .then((fullGroups) => res.json(fullGroups))
+            .catch((error) => res.status(500).json({ error: error.message }));
+    });
+});
+
+app.post('/assign-random-colors', (req, res) => {
+    const colorPalette = [
+        '#0079C7', '#143A85', '#6F2282', '#CF4082',
+        '#E84E10', '#F27E00', '#FCBB00', '#FFDE15',
+        '#B76000', '#00973B', '#00A59B'
+    ];
+
+    db.all('SELECT id FROM study_groups', [], (err, rows) => {
+        if (err) return res.status(500).json({ error: err.message });
+
+        const updates = rows.map(group => {
+            const color = colorPalette[Math.floor(Math.random() * colorPalette.length)];
+            return new Promise((resolve, reject) => {
+                db.run('UPDATE study_groups SET color = ? WHERE id = ?', [color, group.id], function (err) {
+                    if (err) reject(err);
+                    else resolve();
+                });
+            });
+        });
+
+        Promise.all(updates)
+            .then(() => res.json({ success: true }))
+            .catch(error => res.status(500).json({ error: error.message }));
+    });
+});
+
 app.listen(port, () => {
     console.log(`Server läuft auf http://localhost:${port}`);
 });

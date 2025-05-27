@@ -25,7 +25,11 @@ export default function StudyGroupDetailPage() {
                         .then(res => res.json())
                         .then(membersList => {
                             setMembers(membersList);
-                            setGroup({ ...found, members: membersList.map((m: any) => m.name).join(', ') });
+                            setGroup({
+                                ...found,
+                                members: membersList.map((m: any) => m.name).join(', '),
+                                color: found.color || '#888' 
+                            });
                             const isMember = membersList.some((m: any) => m.id === userId);
                             setSubscribed(isMember);
                         });

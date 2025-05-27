@@ -94,8 +94,8 @@ export default function CalendarPage() {
                         key={group.id}
                         onClick={() => handleToggleGroup(group.id.toString())}
                         className={`px-4 py-1 rounded border ${activeGroupFilters.includes(group.id.toString())
-                                ? 'bg-blue-600 text-white'
-                                : 'bg-white text-black border-gray-300'
+                            ? 'bg--600 text-white'
+                            : 'bg-white text-black border-gray-300'
                             }`}
                     >
                         {group.name}
