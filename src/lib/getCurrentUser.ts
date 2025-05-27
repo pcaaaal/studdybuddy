@@ -1,7 +1,7 @@
 import PocketBase from 'pocketbase';
 import {cookies} from 'next/headers';
 
-export async function getCurrentUser() {
+export async function getCurrentUserId() {
 	const pb = new PocketBase(process.env.NEXT_PUBLIC_POCKETBASE_URL);
 	const cookieStore = cookies();
 
