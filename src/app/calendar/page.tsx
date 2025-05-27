@@ -1,7 +1,38 @@
 'use client';
 
 import { useState } from 'react';
-import { studyGroups, currentUser } from '@/lib/data';
+
+const currentUser = {
+    subscribedGroups: ['math', 'physics']
+};
+
+const studyGroups = [
+    {
+        id: 'math',
+        name: 'Mathematical Insights Circle',
+        color: 'bg-yellow-200',
+        schedule: [
+            { weekday: 1, time: '14:00' }, // Monday
+            { weekday: 3, time: '10:00' }  // Wednesday
+        ]
+    },
+    {
+        id: 'physics',
+        name: 'Physics Explorers Forum',
+        color: 'bg-blue-200',
+        schedule: [
+            { weekday: 2, time: '13:00' } // Tuesday
+        ]
+    },
+    {
+        id: 'chem',
+        name: 'Chem Collective',
+        color: 'bg-green-200',
+        schedule: [
+            { weekday: 4, time: '09:00' } // Thursday
+        ]
+    }
+];
 
 const month = 4;
 const year = 2025;
@@ -11,8 +42,8 @@ export default function CalendarPage() {
     const [activeGroupFilters, setActiveGroupFilters] = useState(currentUser.subscribedGroups);
 
     const handleToggleGroup = (groupId: string) => {
-        setActiveGroupFilters(prev =>
-            prev.includes(groupId) ? prev.filter(id => id !== groupId) : [...prev, groupId]
+        setActiveGroupFilters((prev) =>
+            prev.includes(groupId) ? prev.filter((id) => id !== groupId) : [...prev, groupId]
         );
     };
 
@@ -20,15 +51,15 @@ export default function CalendarPage() {
         const date = new Date(year, month, day);
         const weekday = date.getDay();
         return studyGroups
-            .filter(group => activeGroupFilters.includes(group.id))
-            .flatMap(group =>
+            .filter((group) => activeGroupFilters.includes(group.id))
+            .flatMap((group) =>
                 group.schedule
-                    .filter(s => s.weekday === weekday)
-                    .map(s => ({
+                    .filter((s) => s.weekday === weekday)
+                    .map((s) => ({
                         id: group.id,
                         title: group.name,
                         time: s.time,
-                        color: s.color,
+                        color: group.color
                     }))
             );
     };
@@ -39,7 +70,7 @@ export default function CalendarPage() {
             <p className="text-gray-600">Subscribed learning groups show up here. Toggle visibility below.</p>
 
             <div className="flex flex-wrap gap-2">
-                {studyGroups.map(group => (
+                {studyGroups.map((group) => (
                     <button
                         key={group.id}
                         onClick={() => handleToggleGroup(group.id)}
@@ -55,10 +86,11 @@ export default function CalendarPage() {
 
             <div className="bg-white shadow rounded p-6">
                 <div className="grid grid-cols-7 gap-2 text-center text-sm font-medium text-gray-600 mb-2">
-                    {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(d => (
+                    {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((d) => (
                         <div key={d}>{d}</div>
                     ))}
                 </div>
+
                 <div className="grid grid-cols-7 gap-2 text-sm">
                     {Array.from({ length: daysInMonth }).map((_, index) => {
                         const day = index + 1;
@@ -67,11 +99,8 @@ export default function CalendarPage() {
                             <div key={day} className="border rounded p-2 h-28 text-left relative">
                                 <div className="text-xs font-semibold text-gray-400 absolute top-1 right-2">{day}</div>
                                 <div className="space-y-1 mt-5">
-                                    {events.map(e => (
-                                        <div
-                                            key={e.title + e.time}
-                                            className={`${e.color} text-xs p-1 rounded`}
-                                        >
+                                    {events.map((e, i) => (
+                                        <div key={e.title + e.time + i} className={`${e.color} text-xs p-1 rounded`}>
                                             {e.title.slice(0, 18)}...
                                             <div className="text-[10px]">{e.time}</div>
                                         </div>

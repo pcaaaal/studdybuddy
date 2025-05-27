@@ -4,30 +4,35 @@ import { useState } from 'react';
 
 const allGroups = [
     {
+        id: 'math',
         name: 'Mathematical Insights Circle',
         description: 'Weekly sessions on problem-solving, theory, and mathematical exploration.',
-        audience: 'Undergraduates, graduate students, or anyone passionate about mathematical thinking.',
+        audience: 'Undergraduates, graduate students, or anyone passionate about mathematical thinking.'
     },
     {
+        id: 'physics',
         name: 'Physics Explorers Forum',
         description: 'Hands-on physics learning with discussions and exam prep.',
-        audience: 'Physics and engineering students looking for deeper understanding and practical experience.',
+        audience: 'Physics and engineering students looking for deeper understanding and practical experience.'
     },
     {
+        id: 'chem',
         name: 'Chem Collective',
         description: 'Collaborative chemistry sessions with demos and problem sets.',
-        audience: 'Chemistry majors, pre-med students, and anyone curious about experimental and theoretical chemistry.',
+        audience: 'Chemistry majors, pre-med students, and anyone curious about experimental and theoretical chemistry.'
     },
     {
+        id: 'bio',
         name: 'Life Sciences Roundtable',
         description: 'A deep dive into biology with quizzes, papers, and discussions.',
-        audience: 'Biology and health sciences students and anyone curious about living systems.',
+        audience: 'Biology and health sciences students and anyone curious about living systems.'
     },
     {
+        id: 'history',
         name: 'Historical Perspectives Circle',
         description: 'Interactive history sessions exploring events, sources, and analysis.',
-        audience: 'History enthusiasts, humanities students, and critical thinkers.',
-    },
+        audience: 'History enthusiasts, humanities students, and critical thinkers.'
+    }
 ];
 
 export default function StudyGroupsPage() {
@@ -65,8 +70,14 @@ export default function StudyGroupsPage() {
                         </thead>
                         <tbody>
                             {filteredGroups.map((group, index) => (
-                                <tr key={index} className="border-t border-gray-200 hover:bg-gray-50">
-                                    <td className="py-3 px-4">{group.name}</td>
+                                <tr
+                                    key={index}
+                                    className="border-t border-gray-200 hover:bg-gray-50 cursor-pointer"
+                                    onClick={() =>
+                                        window.location.href = `/studygroups/${group.id}`
+                                    }
+                                >
+                                    <td className="py-3 px-4 text-blue-600 underline">{group.name}</td>
                                     <td className="py-3 px-4">{group.description}</td>
                                     <td className="py-3 px-4">{group.audience}</td>
                                 </tr>

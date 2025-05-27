@@ -14,10 +14,20 @@ const mockBuddies = [
   { name: 'Emily Roth', img: '/green_bunny.png' },
   { name: 'Noah Keller', img: '/meta_ceo.png' },
   { name: 'Mara Blum', img: '/mummy.png' },
-  { name: 'Jonas Frei', img: '/godzilla.png' },
+  { name: 'Jonares Fresi', img: '/godzilla.png' },
   { name: 'Elia Weber', img: '/purple_sigma.png' },
   { name: 'Lara Schmid', img: '/red_bunny.png' },
-  { name: 'Tim Müller', img: '/purple_ghost.png' }
+  { name: 'Tim Müller', img: '/purple_ghost.png' },
+  { name: 'Anna Becker', img: '/orange_beetle.png' },
+  { name: 'Lukas Steiner', img: '/blue_aunt.png' },
+  { name: 'Nina Vogel', img: '/fish.png' },
+  { name: 'Tim Bachmann', img: '/green_unc.png' },
+  { name: 'Lisa Meier', img: '/bird.png' },
+  { name: 'David Keller', img: '/purple_thing.png' },
+  { name: 'Maraka Blumaka', img: '/yellow_mummy.png' },
+  { name: 'Jonas Frei', img: '/blue_ghost.png' },
+  { name: 'Amira Bachmann', img: '/ocker_ghost.png' },
+  { name: 'Sophie Gerber', img: '/rosette.png' }
 ];
 
 const groupColors: Record<string, string> = {

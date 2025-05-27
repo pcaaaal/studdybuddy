@@ -10,15 +10,23 @@ export type StudyGroup = {
     }[];
 };
 
+export type ScheduleEvent = {
+    title: string;
+    date: string; 
+    time: string; 
+};
+
 export type User = {
     id: string;
     name: string;
     subscribedGroups: string[];
+    schedule?: ScheduleEvent[];
 };
+
 export type Event = {
     id: string;
     title: string;
-    date: string; 
+    date: string;
     time: string;
-    color: string; 
+    color: string;
 };
