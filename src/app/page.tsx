@@ -3,7 +3,6 @@ import {
 	getAllStudyGroups,
 	getStudyGroupsByUserId,
 } from '../lib/collections/studygroup';
-import {getCurrentUser} from '../lib/getCurrentUser';
 import {
 	Card,
 	CardHeader,
@@ -21,6 +20,8 @@ import {
 } from '@/components/ui/table';
 import Image from 'next/image';
 import {Badge} from '../components/ui/badge';
+import {getCurrentUserId} from '../lib/getCurrentUserId';
+import {getAllUsers, getUserByUserId} from '../lib/collections/user';
 
 const groupColors: Record<string, string> = {
 	math: 'bg-yellow-200',
@@ -34,9 +35,9 @@ function capitalize(str: string) {
 }
 
 export default async function HomePage() {
-	const user = await getCurrentUser();
+	const userId = await getCurrentUserId();
 
-	if (!user) {
+	if (!userId) {
 		return (
 			<div className="container mx-auto px-4 py-8">
 				<Card>
@@ -50,15 +51,23 @@ export default async function HomePage() {
 			</div>
 		);
 	}
-
-	const myStudyGroups = await getStudyGroupsByUserId(user.id);
-	const myStudyBuddies = await getStudyBuddiesByUserId(user.id);
+	const user = await getUserByUserId(userId);
+	const myStudyGroups = await getStudyGroupsByUserId(userId);
+	const myStudyBuddies = await getStudyBuddiesByUserId(userId);
 	const studyGroups = await getAllStudyGroups();
+	const users = await getAllUsers();
+
+	console.log('Current User ID:', user);
+	console.log('User:', user);
+	console.log('My Study Groups:', myStudyGroups);
+	console.log('My Study Buddies:', myStudyBuddies);
+	console.log('All Study Groups:', studyGroups);
+	console.log('All Users:', users);
 
 	return (
 		<div className="container mx-auto px-4 space-y-8">
 			<h1 className="text-5xl font-extrabold">
-				Welcome Back, {capitalize(user.name || user.username || 'User')}
+				Welcome Back, {capitalize(user.name || 'User')}
 			</h1>
 
 			<div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
