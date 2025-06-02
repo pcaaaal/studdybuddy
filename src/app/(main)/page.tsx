@@ -50,7 +50,6 @@ export default async function HomePage() {
 	const myStudyBuddies = await getStudyBuddiesByUserId(userId);
 	const studyGroups = await getAllStudyGroups();
 
-	console.log('StudyGroups:', studyGroups);
 
 	return (
 		<div className="container mx-auto px-4 space-y-8">

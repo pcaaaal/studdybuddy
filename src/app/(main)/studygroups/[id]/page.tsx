@@ -3,8 +3,6 @@
 
 import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import Calendar from 'react-calendar';
-import 'react-calendar/dist/Calendar.css';
 
 export default function StudyGroupDetailPage() {
     const { id } = useParams();
@@ -13,6 +11,9 @@ export default function StudyGroupDetailPage() {
     const [events, setEvents] = useState<any[]>([]);
     const [subscribed, setSubscribed] = useState(false);
     const userId = 1;
+
+    const [currentMonth, setCurrentMonth] = useState(5);
+    const [currentYear, setCurrentYear] = useState(2025);
 
     useEffect(() => {
         if (!id) return;
@@ -28,7 +29,7 @@ export default function StudyGroupDetailPage() {
                             setGroup({
                                 ...found,
                                 members: membersList.map((m: any) => m.name).join(', '),
-                                color: found.color || '#888' 
+                                color: found.color || '#888'
                             });
                             const isMember = membersList.some((m: any) => m.id === userId);
                             setSubscribed(isMember);
@@ -45,40 +46,56 @@ export default function StudyGroupDetailPage() {
         const newState = !subscribed;
         setSubscribed(newState);
 
-        if (newState) {
-            fetch('http://localhost:3001/group-members', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ user_id: userId, group_id: id })
-            })
-                .then(res => res.json())
-                .then(() => {
-                    fetch(`http://localhost:3001/group-members/${id}`)
-                        .then(res => res.json())
-                        .then(data => {
-                            setMembers(data);
-                            if (group) {
-                                setGroup({ ...group, members: data.map((m: any) => m.name).join(', ') });
-                            }
-                        });
-                });
-        } else {
-            fetch(`http://localhost:3001/group-members/${id}/${userId}`, {
-                method: 'DELETE'
-            })
-                .then(res => res.json())
-                .then(() => {
-                    fetch(`http://localhost:3001/group-members/${id}`)
-                        .then(res => res.json())
-                        .then(data => {
-                            setMembers(data);
-                            if (group) {
-                                setGroup({ ...group, members: data.map((m: any) => m.name).join(', ') });
-                            }
-                        });
-                });
-        }
+        const url = `http://localhost:3001/group-members${newState ? '' : `/${id}/${userId}`}`;
+        const method = newState ? 'POST' : 'DELETE';
+        const body = newState ? JSON.stringify({ user_id: userId, group_id: id }) : null;
+
+        fetch(url, {
+            method,
+            headers: { 'Content-Type': 'application/json' },
+            ...(body && { body })
+        })
+            .then(res => res.json())
+            .then(() => {
+                fetch(`http://localhost:3001/group-members/${id}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        setMembers(data);
+                        if (group) {
+                            setGroup({ ...group, members: data.map((m: any) => m.name).join(', ') });
+                        }
+                    });
+            });
     };
+
+    const handleMonthChange = (dir: 'next' | 'prev') => {
+        let newMonth = currentMonth + (dir === 'next' ? 1 : -1);
+        let newYear = currentYear;
+
+        if (newMonth < 0) {
+            newMonth = 11;
+            newYear--;
+        } else if (newMonth > 11) {
+            newMonth = 0;
+            newYear++;
+        }
+
+        setCurrentMonth(newMonth);
+        setCurrentYear(newYear);
+    };
+
+    const getDaysInMonth = (year: number, month: number) => {
+        return new Date(year, month + 1, 0).getDate();
+    };
+
+    const getEventsForDay = (day: number) => {
+        const dateObj = new Date(currentYear, currentMonth, day);
+        const isoDate = dateObj.toISOString().split('T')[0];
+        return events.filter((e: any) => e.date === isoDate);
+    };
+
+    const daysInMonth = getDaysInMonth(currentYear, currentMonth);
+    const firstDay = new Date(currentYear, currentMonth, 1).getDay();
 
     if (!group) return <p>Loading...</p>;
 
@@ -110,18 +127,51 @@ export default function StudyGroupDetailPage() {
             </div>
 
             <div className="w-full lg:w-[66vw] bg-white shadow rounded p-6">
-                <h2 className="text-2xl font-semibold mb-4">Group Calendar</h2>
-                <div className="scale-[0.9] origin-top-left">
-                    <Calendar
-                        tileContent={({ date }) => {
-                            const foundEvent = events.find(event =>
-                                new Date(event.date).toDateString() === date.toDateString()
-                            );
-                            return foundEvent ? (
-                                <p className="text-xs text-purple-600 font-semibold">{foundEvent.title}</p>
-                            ) : null;
-                        }}
-                    />
+                <div className="flex justify-between items-center mb-4">
+                    <button
+                        className="bg-gray-200 text-black px-4 py-2 rounded"
+                        onClick={() => handleMonthChange('prev')}
+                    >
+                        ← Previous
+                    </button>
+                    <span className="text-lg font-semibold">
+                        {new Date(currentYear, currentMonth).toLocaleString('default', { month: 'long' })} {currentYear}
+                    </span>
+                    <button
+                        className="bg-blue-600 text-white px-4 py-2 rounded"
+                        onClick={() => handleMonthChange('next')}
+                    >
+                        Next →
+                    </button>
+                </div>
+
+                <div className="grid grid-cols-7 gap-2 text-center text-sm font-medium text-gray-600 mb-2">
+                    {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((d) => (
+                        <div key={d}>{d}</div>
+                    ))}
+                </div>
+
+                <div className="grid grid-cols-7 gap-2 text-sm">
+                    {Array.from({ length: firstDay }).map((_, index) => (
+                        <div key={`empty-${index}`} className="h-28" />
+                    ))}
+                    {Array.from({ length: daysInMonth }).map((_, index) => {
+                        const day = index + 1;
+                        const dayEvents = getEventsForDay(day);
+                        return (
+                            <div key={day} className="border rounded p-2 h-28 text-left relative">
+                                <div className="text-xs font-semibold text-gray-400 absolute top-1 right-2">{day}</div>
+                                <div className="space-y-1 mt-5">
+                                    {dayEvents.map((e: any, i: number) => (
+                                        <div key={e.title + e.time + i} className="bg-purple-200 text-xs p-1 rounded">
+                                            {e.title.slice(0, 18)}...
+                                            <div className="text-[10px]">{e.time}</div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        );
+                    })}
                 </div>
             </div>
         </div>
