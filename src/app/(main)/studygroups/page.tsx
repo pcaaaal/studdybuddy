@@ -1,17 +1,19 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
+import { getAllStudyGroups, getUsersFromStudyGroup } from '@/lib/collections/studygroup';
 import { useEffect, useState } from 'react';
-
 export default function StudyGroupsPage() {
     const [groups, setGroups] = useState<any[]>([]);
     const [search, setSearch] = useState('');
     const [sortKey, setSortKey] = useState<'name' | 'members'>('name');
 
     useEffect(() => {
-        fetch('http://localhost:3001/study-groups-with-members')
-            .then(res => res.json())
-            .then(data => setGroups(data));
+        async function fetchStudyGroups() {
+            const data = await getAllStudyGroups();
+            setGroups(data);
+        }
+        fetchStudyGroups();
     }, []);
 
     const filteredGroups = groups
@@ -45,25 +47,28 @@ export default function StudyGroupsPage() {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredGroups.map((group, index) => (
-                    <div
-                        key={index}
-                        className="flex bg-white rounded-xl shadow-md hover:shadow-lg transition cursor-pointer border border-gray-100 overflow-hidden"
-                        onClick={() => window.location.href = `/studygroups/${group.id}`}
-                    >
+                {filteredGroups.map((group, index) => {
+                    const users = getUsersFromStudyGroup(group); 
+                    return (
                         <div
-                            className="w-2"
-                            style={{ backgroundColor: group.color || '#E5E7EB' }}
-                        />
-
-                        {}
-                        <div className="p-5 flex-1">
-                            <h2 className="text-xl font-bold text-blue-600 mb-2">{group.name}</h2>
-                            <p className="text-sm text-gray-600 mb-3">{group.description}</p>
-                            <p className="text-xs text-gray-400">👥 {group.members?.join(', ') || 'No members yet'}</p>
+                            key={index}
+                            className="flex bg-white rounded-xl shadow-md hover:shadow-lg transition cursor-pointer border border-gray-100 overflow-hidden"
+                            onClick={() => window.location.href = `/studygroups/${group.id}`}
+                        >
+                            <div
+                                className="w-2"
+                                style={{ backgroundColor: group.color || '#E5E7EB' }}
+                            />
+                            <div className="p-5 flex-1 min-w-60 max-w-600">
+                                <h2 className="text-xl font-bold text-blue-600 mb-2">{group.name}</h2>
+                                <p className="text-sm text-gray-600 mb-3">{group.description}</p>
+                                <p className="text-xs text-gray-400">
+                                    👥 {users.length ? users.map(user => user.name).join(', ') : 'No members yet'}
+                                </p>
+                            </div>
                         </div>
-                    </div>
-                ))}
+                    );
+                })}
             </div>
         </div>
     );

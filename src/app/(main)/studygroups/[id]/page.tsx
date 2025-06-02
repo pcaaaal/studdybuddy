@@ -1,11 +1,11 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
-import {redirect, useParams} from 'next/navigation';
-import {useEffect, useState} from 'react';
+import { redirect, useParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { pb } from '../../../../lib/pocketbase';
 
 export default function StudyGroupDetailPage() {
-	const {id} = useParams();
+	const { id } = useParams();
 	const [group, setGroup] = useState<any>(null);
 	const [members, setMembers] = useState<any[]>([]);
 	const [events, setEvents] = useState<any[]>([]);
@@ -16,35 +16,27 @@ export default function StudyGroupDetailPage() {
 	const [currentYear, setCurrentYear] = useState(2025);
 
 	useEffect(() => {
-		if (!id || isNaN(Number(id))) {
+		if (!id) {
 			redirect('/studygroups');
 		}
 
-		fetch(`http://localhost:3001/study-groups/${id}`)
-			.then((res) => res.json())
+		pb.collection('studygroup')
+			.getOne(id, {
+				expand: 'location_studygroup_via_studygroup.location, user_studygroup_via_studygroup.user, leader',
+			})
 			.then((found) => {
 				if (found) {
-					fetch(`http://localhost:3001/group-members/${id}`)
-						.then((res) => res.json())
-						.then((membersList) => {
-							setMembers(membersList);
-							setGroup({
-								...found,
-								members: membersList
-									.map((m: any) => m.name)
-									.join(', '),
-								color: found.color || '#888',
-							});
-							const isMember = membersList.some(
-								(m: any) => m.id === userId,
-							);
-							setSubscribed(isMember);
-						});
+					setGroup(found);
+					const membersList = getUsersFromStudyGroup(found);
+					setMembers(membersList);
+					setSubscribed(membersList.some((m: any) => m.id === userId));
 				}
 			});
 
-		fetch(`http://localhost:3001/events/${id}`)
-			.then((res) => res.json())
+		pb.collection('event')
+			.getFullList({
+				filter: `studygroup = "${id}"`,
+			})
 			.then(setEvents);
 	}, [id]);
 
@@ -52,33 +44,30 @@ export default function StudyGroupDetailPage() {
 		const newState = !subscribed;
 		setSubscribed(newState);
 
-		const url = `http://localhost:3001/group-members${
-			newState ? '' : `/${id}/${userId}`
-		}`;
+		const url = `http://localhost:3001/group-members${newState ? '' : `/${id}/${userId}`}`;
 		const method = newState ? 'POST' : 'DELETE';
 		const body = newState
-			? JSON.stringify({user_id: userId, group_id: id})
+			? JSON.stringify({ user_id: userId, group_id: id })
 			: null;
 
 		fetch(url, {
 			method,
-			headers: {'Content-Type': 'application/json'},
-			...(body && {body}),
+			headers: { 'Content-Type': 'application/json' },
+			...(body && { body }),
 		})
 			.then((res) => res.json())
 			.then(() => {
-				fetch(`http://localhost:3001/group-members/${id}`)
-					.then((res) => res.json())
-					.then((data) => {
-						setMembers(data);
-						if (group) {
-							setGroup({
-								...group,
-								members: data
-									.map((m: any) => m.name)
-									.join(', '),
-							});
-						}
+				pb.collection('studygroup')
+					.getOne(id, {
+						expand: 'user_studygroup_via_studygroup.user',
+					})
+					.then((updatedGroup) => {
+						const updatedMembers = getUsersFromStudyGroup(updatedGroup);
+						setMembers(updatedMembers);
+						setGroup({
+							...group,
+							members: updatedMembers.map((m: any) => m.name).join(', '),
+						});
 					});
 			});
 	};
@@ -106,8 +95,13 @@ export default function StudyGroupDetailPage() {
 	const getEventsForDay = (day: number) => {
 		const dateObj = new Date(currentYear, currentMonth, day);
 		const isoDate = dateObj.toISOString().split('T')[0];
-		return events.filter((e: any) => e.date === isoDate);
+
+		return events.filter((e: any) => {
+			const eventDate = new Date(e.date);
+			return eventDate.toISOString().split('T')[0] === isoDate;
+		});
 	};
+
 
 	const daysInMonth = getDaysInMonth(currentYear, currentMonth);
 	const firstDay = new Date(currentYear, currentMonth, 1).getDay();
@@ -134,9 +128,8 @@ export default function StudyGroupDetailPage() {
 				<div className="bg-white shadow rounded p-6">
 					<button
 						onClick={toggleSubscription}
-						className={`w-full px-4 py-2 rounded text-white ${
-							subscribed ? 'bg-red-500' : 'bg-blue-600'
-						}`}
+						className={`w-full px-4 py-2 rounded text-white ${subscribed ? 'bg-red-500' : 'bg-blue-600'
+							}`}
 					>
 						{subscribed ? 'Unsubscribe' : 'Subscribe'}
 					</button>
@@ -152,10 +145,7 @@ export default function StudyGroupDetailPage() {
 						← Previous
 					</button>
 					<span className="text-lg font-semibold">
-						{new Date(currentYear, currentMonth).toLocaleString(
-							'default',
-							{month: 'long'},
-						)}{' '}
+						{new Date(currentYear, currentMonth).toLocaleString('default', { month: 'long' })}{' '}
 						{currentYear}
 					</span>
 					<button
@@ -167,38 +157,29 @@ export default function StudyGroupDetailPage() {
 				</div>
 
 				<div className="grid grid-cols-7 gap-2 text-center text-sm font-medium text-gray-600 mb-2">
-					{['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(
-						(d) => (
-							<div key={d}>{d}</div>
-						),
-					)}
+					{['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((d) => (
+						<div key={d}>{d}</div>
+					))}
 				</div>
 
 				<div className="grid grid-cols-7 gap-2 text-sm">
-					{Array.from({length: firstDay}).map((_, index) => (
+					{Array.from({ length: firstDay }).map((_, index) => (
 						<div key={`empty-${index}`} className="h-28" />
 					))}
-					{Array.from({length: daysInMonth}).map((_, index) => {
+					{Array.from({ length: daysInMonth }).map((_, index) => {
 						const day = index + 1;
 						const dayEvents = getEventsForDay(day);
+						console
 						return (
-							<div
-								key={day}
-								className="border rounded p-2 h-28 text-left relative"
-							>
+							<div key={day} className="border rounded p-2 h-28 text-left relative">
 								<div className="text-xs font-semibold text-gray-400 absolute top-1 right-2">
 									{day}
 								</div>
 								<div className="space-y-1 mt-5">
 									{dayEvents.map((e: any, i: number) => (
-										<div
-											key={e.title + e.time + i}
-											className="bg-purple-200 text-xs p-1 rounded"
-										>
+										<div key={e.title + e.date + i} className="bg-purple-200 text-xs p-1 rounded">
 											{e.title.slice(0, 18)}...
-											<div className="text-[10px]">
-												{e.time}
-											</div>
+											<div className="text-[10px]">{e.date}</div>
 										</div>
 									))}
 								</div>
@@ -209,4 +190,11 @@ export default function StudyGroupDetailPage() {
 			</div>
 		</div>
 	);
+}
+
+function getUsersFromStudyGroup(group: any) {
+	const links = group.expand?.user_studygroup_via_studygroup ?? [];
+	return links
+		.map((link) => link.expand?.user)
+		.filter((user) => Boolean(user));
 }
