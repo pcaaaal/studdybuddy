@@ -23,7 +23,17 @@ export async function GET() {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
+    // Studiengruppen des Benutzers abrufen
+    const groups = await pb.collection("user_studygroup").getFullList({
+      filter: `user="${user.id}"`,
+      expand: "studygroup",
+    });
 
+    // Study Buddies des Benutzers abrufen
+    const buddies = await pb.collection("studybuddy").getFullList({
+      filter: `user_a="${user.id}" || user_b="${user.id}"`,
+      expand: "user_a,user_b",
+    });
 
     return NextResponse.json({
       user: {
@@ -32,6 +42,12 @@ export async function GET() {
         name: user.name,
         avatar: user.avatar,
       },
+      studyGroups: groups.map((g) => g.expand?.studygroup).filter(Boolean),
+      studyBuddies: buddies
+        .map((b) =>
+          b.expand?.user_a?.id === user.id ? b.expand?.user_b : b.expand?.user_a
+        )
+        .filter(Boolean),
     });
   } catch (error) {
     console.error("Error in profile API:", error);

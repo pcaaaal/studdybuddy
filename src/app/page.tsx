@@ -1,6 +1,7 @@
 import {getStudyBuddiesByUserId} from '../lib/collections/studybuddy';
 import {
 	getAllStudyGroups,
+	getLocationsFromStudyGroup,
 	getStudyGroupsByUserId,
 } from '../lib/collections/studygroup';
 import {
@@ -19,16 +20,9 @@ import {
 	TableCell,
 } from '@/components/ui/table';
 import Image from 'next/image';
-import {Badge} from '../components/ui/badge';
 import {getCurrentUserId} from '../lib/getCurrentUserId';
-import {getAllUsers, getUserByUserId} from '../lib/collections/user';
-
-const groupColors: Record<string, string> = {
-	math: 'bg-yellow-200',
-	bio: 'bg-pink-200',
-	chem: 'bg-green-200',
-	phys: 'bg-blue-200',
-};
+import {getUserByUserId} from '../lib/collections/user';
+import {StudyGroupDialog} from './components/StudyGroupDialog';
 
 function capitalize(str: string) {
 	return str.charAt(0).toUpperCase() + str.slice(1);
@@ -55,21 +49,14 @@ export default async function HomePage() {
 	const myStudyGroups = await getStudyGroupsByUserId(userId);
 	const myStudyBuddies = await getStudyBuddiesByUserId(userId);
 	const studyGroups = await getAllStudyGroups();
-	const users = await getAllUsers();
 
-	console.log('Current User ID:', user);
-	console.log('User:', user);
-	console.log('My Study Groups:', myStudyGroups);
-	console.log('My Study Buddies:', myStudyBuddies);
-	console.log('All Study Groups:', studyGroups);
-	console.log('All Users:', users);
+	console.log('StudyGroups:', studyGroups);
 
 	return (
 		<div className="container mx-auto px-4 space-y-8">
 			<h1 className="text-5xl font-extrabold">
 				Welcome Back, {capitalize(user.name || 'User')}
 			</h1>
-
 			<div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 				{/* My Study Groups */}
 				<Card>
@@ -86,23 +73,40 @@ export default async function HomePage() {
 								<TableHeader>
 									<TableRow>
 										<TableHead>Name</TableHead>
-										<TableHead>Room</TableHead>
+										<TableHead>Location</TableHead>
 										<TableHead>Group Leader</TableHead>
 									</TableRow>
 								</TableHeader>
 								<TableBody>
 									{myStudyGroups.map((group) => (
-										<TableRow key={group?.id}>
-											<TableCell>
-												{group?.name || 'N/A'}
-											</TableCell>
-											<TableCell>
-												{group?.room || 'N/A'}
-											</TableCell>
-											<TableCell>
-												{group?.leader || 'N/A'}
-											</TableCell>
-										</TableRow>
+										<StudyGroupDialog
+											group={group}
+											key={group?.id}
+										>
+											<TableRow>
+												<TableCell>
+													{group?.name || 'N/A'}
+												</TableCell>
+												<TableCell>
+													{getLocationsFromStudyGroup(
+														group,
+														// eslint-disable-next-line @typescript-eslint/no-explicit-any
+													).map((location: any) => (
+														<span key={location.id}>
+															{location.school} -{' '}
+															{location.room}
+														</span>
+													)) || 'N/A'}
+												</TableCell>
+												<TableCell>
+													{group?.expand?.leader
+														?.id === user.id
+														? 'You'
+														: group?.expand?.leader
+																?.name || 'N/A'}
+												</TableCell>
+											</TableRow>
+										</StudyGroupDialog>
 									))}
 								</TableBody>
 							</Table>
@@ -160,27 +164,31 @@ export default async function HomePage() {
 						) : (
 							<div className="space-y-3">
 								{studyGroups.map((group) => {
-									const colorClass =
-										groupColors[
-											group.category?.toLowerCase()
-										] || 'bg-gray-100';
-
 									return (
-										<div
-											key={group.id}
-											className={`${colorClass} p-4 rounded`}
+										<StudyGroupDialog
+											group={group}
+											key={group?.id}
 										>
-											<div className="flex justify-between items-start">
-												<h3 className="font-bold">
-													{group.name}
-												</h3>
-												<Badge>Match!</Badge>
+											<div
+												key={group.id}
+												className={`p-4 rounded`}
+												style={{
+													backgroundColor:
+														group.color ||
+														'#f0f0f0',
+												}}
+											>
+												<div className="flex justify-between items-start">
+													<h3 className="font-bold">
+														{group.name}
+													</h3>
+												</div>
+												<p className="text-sm mt-1">
+													{group.description ||
+														'No description available.'}
+												</p>
 											</div>
-											<p className="text-sm mt-1">
-												{group.description ||
-													'No description available.'}
-											</p>
-										</div>
+										</StudyGroupDialog>
 									);
 								})}
 							</div>
