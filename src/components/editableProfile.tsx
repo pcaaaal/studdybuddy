@@ -5,21 +5,43 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { User } from "@/lib/types";
+import { updateUserByUserId } from "@/lib/collections/user";
 
-export default function EditableProfile({ user }: { user: any }) {
+export default function EditableProfile({ user }: { user: User }) {
   const [isEditing, setIsEditing] = React.useState(false);
   const [profile, setProfile] = React.useState<User>(user);
+  const [isSaving, setIsSaving] = React.useState(false);
 
-  const handleEditToggle = () => setIsEditing(!isEditing);
+  const handleEditToggle = () => {
+    if (isEditing) {
+      handleSave();
+    } else {
+      setIsEditing(true);
+    }
+  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setProfile((prev) => ({ ...prev, [name]: value }));
   };
 
-  console.log("Profile data:", profile);
-  console.log("User data:", user);
-  
+  const handleSave = async () => {
+    setIsSaving(true);
+    try {
+      await updateUserByUserId(profile.id, {
+        name: profile.name,
+        email: profile.email,
+        avatar: profile.avatar,
+      });
+      setIsEditing(false);
+      console.log("Profile updated successfully");
+    } catch (error) {
+      console.error("Failed to update profile:", error);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   return (
     <div className="bg-white shadow rounded-lg p-6 space-y-6">
       <div className="flex items-center space-x-4">
@@ -35,8 +57,8 @@ export default function EditableProfile({ user }: { user: any }) {
           <p className="text-gray-600">{profile.email}</p>
         </div>
       </div>
-      <Button variant="outline" onClick={handleEditToggle}>
-        {isEditing ? "Save" : "Edit"}
+      <Button variant="outline" onClick={handleEditToggle} disabled={isSaving}>
+        {isEditing ? (isSaving ? "Saving..." : "Save") : "Edit"}
       </Button>
       {isEditing && (
         <div className="space-y-4">
