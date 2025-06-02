@@ -1,9 +1,9 @@
-import {getStudyBuddiesByUserId} from '../lib/collections/studybuddy';
+import {getStudyBuddiesByUserId} from '../../lib/collections/studybuddy';
 import {
 	getAllStudyGroups,
 	getLocationsFromStudyGroup,
 	getStudyGroupsByUserId,
-} from '../lib/collections/studygroup';
+} from '../../lib/collections/studygroup';
 import {
 	Card,
 	CardHeader,
@@ -20,9 +20,9 @@ import {
 	TableCell,
 } from '@/components/ui/table';
 import Image from 'next/image';
-import {getCurrentUserId} from '../lib/getCurrentUserId';
-import {getUserByUserId} from '../lib/collections/user';
-import {StudyGroupDialog} from './components/StudyGroupDialog';
+import {getCurrentUserId} from '../../lib/getCurrentUserId';
+import {getUserByUserId} from '../../lib/collections/user';
+import {StudyGroupDialog} from '../../components/StudyGroupDialog';
 
 function capitalize(str: string) {
 	return str.charAt(0).toUpperCase() + str.slice(1);
@@ -49,7 +49,6 @@ export default async function HomePage() {
 	const myStudyGroups = await getStudyGroupsByUserId(userId);
 	const myStudyBuddies = await getStudyBuddiesByUserId(userId);
 	const studyGroups = await getAllStudyGroups();
-
 
 	return (
 		<div className="container mx-auto px-4 space-y-8">

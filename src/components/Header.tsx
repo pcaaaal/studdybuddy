@@ -1,6 +1,6 @@
 import * as React from 'react';
 import Link from 'next/link';
-import {cn} from '../../lib/utils';
+import {cn} from '../lib/utils';
 import {
 	NavigationMenu,
 	NavigationMenuItem,
@@ -8,7 +8,11 @@ import {
 	NavigationMenuList,
 } from '@radix-ui/react-navigation-menu';
 import LogoutButton from './LogoutButton';
-import {getCurrentUserId} from '../../lib/getCurrentUserId';
+import dynamic from 'next/dynamic';
+
+const MobileHeader = dynamic(() => import('./MobileHeader'), {
+	ssr: true,
+});
 
 type NavItem = {
 	name: string;
@@ -21,7 +25,6 @@ interface HeaderProps extends React.HTMLAttributes<HTMLDivElement> {
 
 const Header = React.forwardRef<HTMLDivElement, HeaderProps>(
 	async ({className, navItems}, ref) => {
-		const userId = getCurrentUserId();
 		return (
 			<header
 				className={cn(
@@ -59,9 +62,11 @@ const Header = React.forwardRef<HTMLDivElement, HeaderProps>(
 								</NavigationMenuList>
 							</NavigationMenu>
 						</nav>
-						{(await userId) && <LogoutButton />}
+						<LogoutButton />
 					</div>
-					<div className="flex flex-1 items-center justify-end gap-4 md:flex-none"></div>
+					<div className="flex flex-1 items-center justify-end gap-4 md:flex-none">
+						<MobileHeader navItems={navItems} />
+					</div>
 				</div>
 			</header>
 		);
