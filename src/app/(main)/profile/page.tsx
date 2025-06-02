@@ -2,7 +2,10 @@ import { getCurrentUserId } from "@/lib/getCurrentUserId";
 import { getUserByUserId } from "@/lib/collections/user";
 import { getStudyGroupsByUserId } from "@/lib/collections/studygroup";
 import { getStudyBuddiesByUserId } from "@/lib/collections/studybuddy";
+import { deleteUserFromStudyGroup } from "@/lib/collections/studygroup"; 
 import EditableProfile from "@/components/editableProfile";
+import StudyGroupsTable from "@/components/StudyGroupTable";
+import StudyBuddiesTable from "@/components/StudyBuddiesTable"; // Neue Client-Komponente
 import {
   Card,
   CardHeader,
@@ -37,6 +40,20 @@ export default async function ProfilePage() {
   const myStudyGroups = await getStudyGroupsByUserId(userId);
   const myStudyBuddies = await getStudyBuddiesByUserId(userId);
 
+  // Funktion zum Verlassen einer Studiengruppe
+  const handleLeaveGroup = async (groupId: string) => {
+    try {
+      await deleteUserFromStudyGroup(userId, groupId); // Benutzer aus der Gruppe entfernen
+      console.log(`Successfully left group with ID: ${groupId}`);
+      // Aktualisiere die Gruppenliste
+      const updatedGroups = await getStudyGroupsByUserId(userId);
+      myStudyGroups.length = 0; // Bestehendes Array leeren
+      myStudyGroups.push(...updatedGroups); // Aktualisierte Gruppen hinzufügen
+    } catch (error) {
+      console.error(`Failed to leave group with ID: ${groupId}`, error);
+    }
+  };
+
   return (
     <div className="container mx-auto px-4 space-y-8">
       <h1 className="text-5xl font-extrabold">Profile</h1>
@@ -50,34 +67,7 @@ export default async function ProfilePage() {
           <CardTitle>My Study Groups</CardTitle>
         </CardHeader>
         <CardContent>
-          {!myStudyGroups || myStudyGroups.length === 0 ? (
-            <p className="text-muted-foreground text-xl">
-              You are not part of any study groups yet.
-            </p>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Description</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {myStudyGroups
-                  ?.filter((group) => group !== null) // Filtere ungültige Gruppen heraus
-                  .map((group) => (
-                    <TableRow key={group.id}>
-                      <TableCell>{group.name || "N/A"}</TableCell>
-                      <TableCell>{group.description || "N/A"}</TableCell>
-                      <TableCell>
-                        <button className="text-blue-500">Leave Group</button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-              </TableBody>
-            </Table>
-          )}
+          <StudyGroupsTable userId={userId} studyGroups={myStudyGroups} />
         </CardContent>
       </Card>
 
@@ -87,34 +77,7 @@ export default async function ProfilePage() {
           <CardTitle>My Study Buddies</CardTitle>
         </CardHeader>
         <CardContent>
-          {!myStudyBuddies || myStudyBuddies.length === 0 ? (
-            <p className="text-muted-foreground text-xl">
-              You have no study buddies yet.
-            </p>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {myStudyBuddies
-                  ?.filter((buddy) => buddy !== null) // Filtere ungültige Buddies heraus
-                  .map((buddy) => (
-                    <TableRow key={buddy.id}>
-                      <TableCell>{buddy.name || "N/A"}</TableCell>
-                      <TableCell>{buddy.email || "N/A"}</TableCell>
-                      <TableCell>
-                        <button className="text-blue-500">Remove Buddy</button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-              </TableBody>
-            </Table>
-          )}
+          <StudyBuddiesTable userId={userId} studyBuddies={myStudyBuddies} />
         </CardContent>
       </Card>
 

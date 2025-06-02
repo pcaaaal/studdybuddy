@@ -14,3 +14,25 @@ export async function updateUserByUserId(
 ) {
 	return await pb.collection('user').update(userId, data);
 }
+
+export async function getUsersByIds(userIds: string[]): Promise<any[]> {
+	if (userIds.length === 0) return [];
+  
+	try {
+	  const users = await Promise.all(
+		userIds.map(async (id) => {
+		  try {
+			return await pb.collection("user").getOne(id);
+		  } catch (err) {
+			console.error(`Failed to fetch user with ID ${id}:`, err);
+			return null;
+		  }
+		})
+	  );
+  
+	  return users.filter(Boolean); // Entferne ungültige Benutzer
+	} catch (err) {
+	  console.error("Failed to fetch users by IDs:", err);
+	  return [];
+	}
+  }

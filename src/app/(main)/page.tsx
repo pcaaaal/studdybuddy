@@ -23,10 +23,6 @@ import Image from 'next/image';
 import {getCurrentUserId} from '../../lib/getCurrentUserId';
 import {getUserByUserId} from '../../lib/collections/user';
 import {StudyGroupDialog} from '../../components/StudyGroupDialog';
-import {
-	getAllEvents,
-	getEventsByStudyGroupId,
-} from '../../lib/collections/events';
 
 function capitalize(str: string) {
 	return str.charAt(0).toUpperCase() + str.slice(1);
@@ -134,10 +130,7 @@ export default async function HomePage() {
 										className="flex flex-col items-center w-20"
 									>
 										<Image
-											src={
-												buddy?.img ||
-												'/default-avatar.png'
-											}
+											src={`${process.env.NEXT_PUBLIC_PB_URL_PICTURES}/${buddy.id}/${buddy.avatar}`}
 											width={40}
 											height={40}
 											alt={buddy?.name || 'Study Buddy'}

@@ -151,3 +151,55 @@ export async function deleteStudyGroup(groupId) {
 		throw err;
 	}
 }
+
+export async function deleteUserFromStudyGroup(
+	groupId: string,
+	userId: string,
+): Promise<{success: boolean}> {
+	try {
+		// Find the link record for this user in the study group
+		const links = await pb.collection('user_studygroup').getFullList({
+			filter: `studygroup = "${groupId}" && user = "${userId}"`,
+		});
+
+		if (links.length === 0) {
+			return {success: false}; // No link found
+		}
+
+		// Delete the first matching link
+		await pb.collection('user_studygroup').delete(links[0].id);
+		console.log(`Successfully removed user ${userId} from group ${groupId}`);
+		return {success: true};
+	} catch (err) {
+		console.error(`Failed to remove user ${userId} from group ${groupId}:`, err);
+		throw err;
+	}
+}
+
+export async function addUserToStudyGroup(
+	groupId: string,
+	userId: string,
+): Promise<{success: boolean}> {
+	try {
+		// Check if the user is already in the group
+		const existingLinks = await pb.collection('user_studygroup').getFullList({
+			filter: `studygroup = "${groupId}" && user = "${userId}"`,
+		});
+
+		if (existingLinks.length > 0) {
+			console.warn(`User ${userId} is already in group ${groupId}`);
+			return {success: false}; // User already in group
+		}
+
+		// Create a new link record
+		await pb.collection('user_studygroup').create({
+			studygroup: groupId,
+			user: userId,
+		});
+		console.log(`Successfully added user ${userId} to group ${groupId}`);
+		return {success: true};
+	} catch (err) {
+		console.error(`Failed to add user ${userId} to group ${groupId}:`, err);
+		throw err;
+	}
+}
