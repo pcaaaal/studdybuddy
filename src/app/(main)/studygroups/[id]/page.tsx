@@ -16,7 +16,7 @@ export default function StudyGroupDetailPage() {
 	const [currentYear, setCurrentYear] = useState(2025);
 
 	useEffect(() => {
-		if (!id || isNaN(Number(id))) {
+		if (!id) {
 			redirect('/studygroups');
 		}
 
