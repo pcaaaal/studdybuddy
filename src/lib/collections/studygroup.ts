@@ -13,7 +13,7 @@ export async function getAllStudyGroups() {
 	}
 }
 
-export async function getStudyGroupsByUserId(userId) {
+export async function getStudyGroupsByUserId(userId: string) {
 	try {
 		const links = await pb.collection('user_studygroup').getFullList({
 			filter: `user = "${userId}"`,
@@ -28,11 +28,11 @@ export async function getStudyGroupsByUserId(userId) {
 }
 
 // PRIVATE
-async function fetchStudyGroupByIds(ids) {
+async function fetchStudyGroupByIds(ids: string[]) {
 	if (ids.length === 0) return [];
 
 	const results = await Promise.all(
-		ids.map(async (id) => {
+		ids.map(async (id: string) => {
 			try {
 				const sg = await pb.collection('studygroup').getOne(id, {
 					expand: 'location_studygroup_via_studygroup.location, user_studygroup_via_studygroup.user, leader',
