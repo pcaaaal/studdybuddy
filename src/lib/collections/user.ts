@@ -5,5 +5,5 @@ export async function getAllUsers() {
 }
 
 export async function getUserByUserId(userId: string) {
-	return await pb.collection('user')	.getOne(userId);
+	return await pb.collection('user').getOne(userId);
 }

@@ -12,13 +12,16 @@ export async function getAllEvents() {
 }
 
 export async function getEventsByStudyGroupId(studyGroupId: string) {
-  try {
-    const events = await pb.collection('event').getFullList({
-      filter: `studygroup = "${studyGroupId}"`,
-    });
-    return events;
-  } catch (err) {
-    console.error(`Failed to fetch events for study group ${studyGroupId}:`, err);
-    return [];
-  }
+	try {
+		const events = await pb.collection('event').getFullList({
+			filter: `studygroup = "${studyGroupId}"`,
+		});
+		return events;
+	} catch (err) {
+		console.error(
+			`Failed to fetch events for study group ${studyGroupId}:`,
+			err,
+		);
+		return [];
+	}
 }
