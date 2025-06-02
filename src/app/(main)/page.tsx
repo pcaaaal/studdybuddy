@@ -23,6 +23,10 @@ import Image from 'next/image';
 import {getCurrentUserId} from '../../lib/getCurrentUserId';
 import {getUserByUserId} from '../../lib/collections/user';
 import {StudyGroupDialog} from '../../components/StudyGroupDialog';
+import {
+	getAllEvents,
+	getEventsByStudyGroupId,
+} from '../../lib/collections/events';
 
 function capitalize(str: string) {
 	return str.charAt(0).toUpperCase() + str.slice(1);
@@ -49,6 +53,11 @@ export default async function HomePage() {
 	const myStudyGroups = await getStudyGroupsByUserId(userId);
 	const myStudyBuddies = await getStudyBuddiesByUserId(userId);
 	const studyGroups = await getAllStudyGroups();
+	const events = await getAllEvents();
+	const eventsByStudyGroup = getEventsByStudyGroupId('q52w9y4i349xkwe');
+	console.log('Study Groups:', studyGroups);
+	console.log('All Events:', events);
+	console.log('Events by Study Group:', eventsByStudyGroup);
 
 	return (
 		<div className="container mx-auto px-4 space-y-8">
