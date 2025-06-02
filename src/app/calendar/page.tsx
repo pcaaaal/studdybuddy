@@ -93,10 +93,8 @@ export default function CalendarPage() {
                     <button
                         key={group.id}
                         onClick={() => handleToggleGroup(group.id.toString())}
-                        className={`px-4 py-1 rounded border ${activeGroupFilters.includes(group.id.toString())
-                            ? 'bg--600 text-white'
-                            : 'bg-white text-black border-gray-300'
-                            }`}
+                        className={`px-4 py-1 rounded border text-black border-gray-300 hover:bg-gray-100 transition-colors
+                            ${activeGroupFilters.includes(group.id.toString()) ? 'bg-gray-200' : 'bg-white'}`}
                     >
                         {group.name}
                     </button>
@@ -114,7 +112,7 @@ export default function CalendarPage() {
                     {new Date(currentYear, currentMonth).toLocaleString('default', { month: 'long' })} {currentYear}
                 </span>
                 <button
-                    className="bg-gray-200 text-black px-4 py-2 rounded"
+                    className="bg-blue-600 text-white px-4 py-2 rounded"
                     onClick={() => handleMonthChange('next')}
                 >
                     Nächster Monat →
