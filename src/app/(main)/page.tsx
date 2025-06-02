@@ -23,6 +23,10 @@ import Image from 'next/image';
 import {getCurrentUserId} from '../../lib/getCurrentUserId';
 import {getUserByUserId} from '../../lib/collections/user';
 import {StudyGroupDialog} from '../../components/StudyGroupDialog';
+import {
+	getAllEvents,
+	getEventsByStudyGroupId,
+} from '../../lib/collections/events';
 
 function capitalize(str: string) {
 	return str.charAt(0).toUpperCase() + str.slice(1);
