@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import {RecordModel} from 'pocketbase';
 import {pb} from '../pocketbase';
 
 // PUBLIC API
@@ -48,27 +50,27 @@ async function fetchStudyGroupByIds(ids: string[]) {
 	return results;
 }
 
-export function getLocationsFromStudyGroup(group) {
+export function getLocationsFromStudyGroup(group: RecordModel) {
 	const links = group.expand?.location_studygroup_via_studygroup ?? [];
 	return links
-		.map((link) => link.expand?.location)
-		.filter((loc) => Boolean(loc));
+		.map((link: RecordModel) => link.expand?.location)
+		.filter((loc: any) => Boolean(loc));
 }
 
-export function getUsersFromStudyGroup(group) {
+export function getUsersFromStudyGroup(group: RecordModel) {
 	const links = group.expand?.user_studygroup_via_studygroup ?? [];
 	return links
-		.map((link) => link.expand?.user)
-		.filter((user) => Boolean(user));
+		.map((link: RecordModel) => link.expand?.user)
+		.filter((user: any) => Boolean(user));
 }
 
 // CREATE a new study group and associated links
 export async function createStudyGroup({
-	name,
-	description,
-	color,
-	audience,
-	leader,
+	name = '',
+	description = '',
+	color = '#a0a0a0',
+	audience = 'public',
+	leaderId = '',
 	tags = [],
 	locationIds = [], // array of location record IDs
 	userIds = [], // array of user record IDs
@@ -80,7 +82,7 @@ export async function createStudyGroup({
 			description,
 			color,
 			audience,
-			leader,
+			leaderId,
 			tags,
 		});
 		const groupId = newGroup.id;
@@ -118,7 +120,7 @@ export async function createStudyGroup({
 }
 
 // DELETE a study group and clean up associated links
-export async function deleteStudyGroup(groupId) {
+export async function deleteStudyGroup(groupId: string) {
 	try {
 		// 1. Remove all location links
 		const locLinks = await pb

@@ -7,7 +7,6 @@ import {
 	NavigationMenuLink,
 	NavigationMenuList,
 } from '@radix-ui/react-navigation-menu';
-import {getCurrentUserId} from '../lib/getCurrentUserId';
 import LogoutButton from './LogoutButton';
 import dynamic from 'next/dynamic';
 
@@ -26,7 +25,6 @@ interface HeaderProps extends React.HTMLAttributes<HTMLDivElement> {
 
 const Header = React.forwardRef<HTMLDivElement, HeaderProps>(
 	async ({className, navItems}, ref) => {
-		const userId = getCurrentUserId();
 		return (
 			<header
 				className={cn(

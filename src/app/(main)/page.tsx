@@ -23,6 +23,7 @@ import Image from 'next/image';
 import {getCurrentUserId} from '../../lib/getCurrentUserId';
 import {getUserByUserId} from '../../lib/collections/user';
 import {StudyGroupDialog} from '../../components/StudyGroupDialog';
+import {RecordModel} from 'pocketbase';
 
 function capitalize(str: string) {
 	return str.charAt(0).toUpperCase() + str.slice(1);
@@ -89,7 +90,7 @@ export default async function HomePage() {
 												</TableCell>
 												<TableCell>
 													{getLocationsFromStudyGroup(
-														group,
+														group as RecordModel,
 														// eslint-disable-next-line @typescript-eslint/no-explicit-any
 													).map((location: any) => (
 														<span key={location.id}>

@@ -88,7 +88,6 @@ export type StudyGroup = {
 	name: string;
 	description: string;
 	audience: string;
-	color: string;
 	tags: string[];
 };
 
@@ -133,19 +132,6 @@ export const columns: ColumnDef<StudyGroup>[] = [
 		accessorKey: 'audience',
 		header: 'Audience',
 		cell: ({row}) => <div>{row.getValue('audience')}</div>,
-	},
-	{
-		accessorKey: 'color',
-		header: 'Color',
-		cell: ({row}) => {
-			const color = row.getValue<string>('color'); // Typisierung hinzugefügt
-			return (
-				<div
-					className="w-4 h-4 rounded-full"
-					style={{backgroundColor: color}}
-				/>
-			);
-		},
 	},
 	{
 		accessorKey: 'tags',
@@ -226,122 +212,127 @@ export default function StudyGroupsPage() {
 	});
 
 	return (
-		<div className="w-full">
-			<div className="flex items-center py-4">
-				<Input
-					placeholder="Filter groups..."
-					value={
-						(table.getColumn('name')?.getFilterValue() as string) ??
-						''
-					}
-					onChange={(event) =>
-						table
-							.getColumn('name')
-							?.setFilterValue(event.target.value)
-					}
-					className="max-w-sm"
-				/>
-				<DropdownMenu>
-					<DropdownMenuTrigger asChild>
-						<Button variant="outline" className="ml-auto">
-							Columns <ChevronDown />
-						</Button>
-					</DropdownMenuTrigger>
-					<DropdownMenuContent align="end">
-						{table
-							.getAllColumns()
-							.filter((column) => column.getCanHide())
-							.map((column) => {
-								return (
-									<DropdownMenuCheckboxItem
-										key={column.id}
-										className="capitalize"
-										checked={column.getIsVisible()}
-										// eslint-disable-next-line @typescript-eslint/no-explicit-any
-										onCheckedChange={(value: any) =>
-											column.toggleVisibility(!!value)
-										}
-									>
-										{column.id}
-									</DropdownMenuCheckboxItem>
-								);
-							})}
-					</DropdownMenuContent>
-				</DropdownMenu>
-			</div>
-			<div className="rounded-md border">
-				<Table>
-					<TableHeader>
-						{table.getHeaderGroups().map((headerGroup) => (
-							<TableRow key={headerGroup.id}>
-								{headerGroup.headers.map((header) => (
-									<TableHead key={header.id}>
-										{header.isPlaceholder
-											? null
-											: flexRender(
-													header.column.columnDef
-														.header,
-													header.getContext(),
-											  )}
-									</TableHead>
-								))}
-							</TableRow>
-						))}
-					</TableHeader>
-					<TableBody>
-						{table.getRowModel().rows?.length ? (
-							table.getRowModel().rows.map((row) => (
-								<TableRow
-									key={row.id}
-									data-state={
-										row.getIsSelected() && 'selected'
-									}
-								>
-									{row.getVisibleCells().map((cell) => (
-										<TableCell key={cell.id}>
-											{flexRender(
-												cell.column.columnDef.cell,
-												cell.getContext(),
-											)}
-										</TableCell>
+		<div className="md:container px-8 space-y-8 max-w-full">
+			<h1 className="text-5xl font-extrabold">Study Groups</h1>
+			<div className="w-full">
+				<div className="flex items-center py-4 gap-4">
+					<Input
+						placeholder="Filter..."
+						value={
+							(table
+								.getColumn('name')
+								?.getFilterValue() as string) ?? ''
+						}
+						onChange={(event) =>
+							table
+								.getColumn('name')
+								?.setFilterValue(event.target.value)
+						}
+						className="max-w-sm"
+					/>
+					<DropdownMenu>
+						<DropdownMenuTrigger asChild>
+							<Button variant="outline" className="ml-auto">
+								Columns <ChevronDown />
+							</Button>
+						</DropdownMenuTrigger>
+						<DropdownMenuContent align="end">
+							{table
+								.getAllColumns()
+								.filter((column) => column.getCanHide())
+								.map((column) => {
+									return (
+										<DropdownMenuCheckboxItem
+											key={column.id}
+											className="capitalize"
+											checked={column.getIsVisible()}
+											// eslint-disable-next-line @typescript-eslint/no-explicit-any
+											onCheckedChange={(value: any) =>
+												column.toggleVisibility(!!value)
+											}
+										>
+											{column.id}
+										</DropdownMenuCheckboxItem>
+									);
+								})}
+						</DropdownMenuContent>
+					</DropdownMenu>
+				</div>
+				<div className="rounded-md border">
+					<Table>
+						<TableHeader>
+							{table.getHeaderGroups().map((headerGroup) => (
+								<TableRow key={headerGroup.id}>
+									{headerGroup.headers.map((header) => (
+										<TableHead key={header.id}>
+											{header.isPlaceholder
+												? null
+												: flexRender(
+														header.column.columnDef
+															.header,
+														header.getContext(),
+												  )}
+										</TableHead>
 									))}
 								</TableRow>
-							))
-						) : (
-							<TableRow>
-								<TableCell
-									colSpan={columns.length}
-									className="h-24 text-center"
-								>
-									No results.
-								</TableCell>
-							</TableRow>
-						)}
-					</TableBody>
-				</Table>
-			</div>
-			<div className="flex items-center justify-end space-x-2 py-4">
-				<div className="flex-1 text-sm text-muted-foreground">
-					{table.getFilteredSelectedRowModel().rows.length} of{' '}
-					{table.getFilteredRowModel().rows.length} row(s) selected.
+							))}
+						</TableHeader>
+						<TableBody>
+							{table.getRowModel().rows?.length ? (
+								table.getRowModel().rows.map((row) => (
+									<TableRow
+										key={row.id}
+										data-state={
+											row.getIsSelected() && 'selected'
+										}
+									>
+										{row.getVisibleCells().map((cell) => (
+											<TableCell key={cell.id}>
+												{flexRender(
+													cell.column.columnDef.cell,
+													cell.getContext(),
+												)}
+											</TableCell>
+										))}
+									</TableRow>
+								))
+							) : (
+								<TableRow>
+									<TableCell
+										colSpan={columns.length}
+										className="h-24 text-center"
+									>
+										No results.
+									</TableCell>
+								</TableRow>
+							)}
+						</TableBody>
+					</Table>
 				</div>
-				<div className="space-x-2">
-					<Button
-						variant="outline"
-						size="sm"
-						onClick={() => table.previousPage()}
-						disabled={!table.getCanPreviousPage()}
-					>
-						Previous
-					</Button>
-					<Button
-						variant="outline"
-						size="sm"
-						onClick={() => table.nextPage()}
-						disabled={!table.getCanNextPage()}
-					>
-						Next
-					</Button>
+				<div className="flex items-center justify-end space-x-2 py-4">
+					<div className="flex-1 text-sm text-muted-foreground">
+						{table.getFilteredSelectedRowModel().rows.length} of{' '}
+						{table.getFilteredRowModel().rows.length} row(s)
+						selected.
+					</div>
+					<div className="space-x-2">
+						<Button
+							variant="outline"
+							size="sm"
+							onClick={() => table.previousPage()}
+							disabled={!table.getCanPreviousPage()}
+						>
+							Previous
+						</Button>
+						<Button
+							variant="outline"
+							size="sm"
+							onClick={() => table.nextPage()}
+							disabled={!table.getCanNextPage()}
+						>
+							Next
+						</Button>
+					</div>
 				</div>
 			</div>
 		</div>
