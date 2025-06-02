@@ -50,7 +50,6 @@ export default async function HomePage() {
 	const myStudyBuddies = await getStudyBuddiesByUserId(userId);
 	const studyGroups = await getAllStudyGroups();
 
-
 	return (
 		<div className="container mx-auto px-4 space-y-8">
 			<h1 className="text-5xl font-extrabold">
@@ -73,7 +72,7 @@ export default async function HomePage() {
 									<TableRow>
 										<TableHead>Name</TableHead>
 										<TableHead>Location</TableHead>
-										<TableHead>Group Leader</TableHead>n
+										<TableHead>Group Leader</TableHead>
 									</TableRow>
 								</TableHeader>
 								<TableBody>
