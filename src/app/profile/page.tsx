@@ -17,11 +17,10 @@ import {
   TableBody,
   TableCell,
 } from "@/components/ui/table";
-import { User } from "@/lib/types";
- 
+
 export default async function ProfilePage() {
   const userId = await getCurrentUserId();
- 
+
   if (!userId) {
     return (
       <div className="container mx-auto px-4 py-8">
@@ -33,18 +32,18 @@ export default async function ProfilePage() {
       </div>
     );
   }
- 
+
   const user = await getUserByUserId(userId);
   const myStudyGroups = await getStudyGroupsByUserId(userId);
   const myStudyBuddies = await getStudyBuddiesByUserId(userId);
- 
+
   return (
     <div className="container mx-auto px-4 space-y-8">
       <h1 className="text-5xl font-extrabold">Profile</h1>
- 
+
       {/* User Information */}
       <EditableProfile user={user ?? {}} />
- 
+
       {/* Study Groups */}
       <Card>
         <CardHeader>
@@ -65,23 +64,23 @@ export default async function ProfilePage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-              {myStudyGroups
-            ?.filter((group) => group !== null) // Filtere ungültige Gruppen heraus
-            .map((group) => (
-              <TableRow key={group.id}>
-                <TableCell>{group.name || "N/A"}</TableCell>
-                <TableCell>{group.description || "N/A"}</TableCell>
-                <TableCell>
-                  <button className="text-blue-500">Leave Group</button>
-                </TableCell>
-              </TableRow>
-            ))}
+                {myStudyGroups
+                  ?.filter((group) => group !== null) // Filtere ungültige Gruppen heraus
+                  .map((group) => (
+                    <TableRow key={group.id}>
+                      <TableCell>{group.name || "N/A"}</TableCell>
+                      <TableCell>{group.description || "N/A"}</TableCell>
+                      <TableCell>
+                        <button className="text-blue-500">Leave Group</button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
               </TableBody>
             </Table>
           )}
         </CardContent>
       </Card>
- 
+
       {/* Study Buddies */}
       <Card>
         <CardHeader>
@@ -102,25 +101,25 @@ export default async function ProfilePage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-              {myStudyBuddies
-            ?.filter((buddy) => buddy !== null) // Filtere ungültige Buddies heraus
-            .map((buddy) => (
-              <TableRow key={buddy.id}>
-                <TableCell>{buddy.name || "N/A"}</TableCell>
-                <TableCell>{buddy.email || "N/A"}</TableCell>
-                <TableCell>
-                  <button className="text-blue-500">Remove Buddy</button>
-                </TableCell>
-              </TableRow>
-            ))}
+                {myStudyBuddies
+                  ?.filter((buddy) => buddy !== null) // Filtere ungültige Buddies heraus
+                  .map((buddy) => (
+                    <TableRow key={buddy.id}>
+                      <TableCell>{buddy.name || "N/A"}</TableCell>
+                      <TableCell>{buddy.email || "N/A"}</TableCell>
+                      <TableCell>
+                        <button className="text-blue-500">Remove Buddy</button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
               </TableBody>
             </Table>
           )}
         </CardContent>
       </Card>
-     
-       {/* Extra Space */}
-       <div className="py-5"></div>
+
+      {/* Extra Space */}
+      <div className="py-5"></div>
     </div>
   );
 }
