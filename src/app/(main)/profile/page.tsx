@@ -12,6 +12,7 @@ import {
 	TableBody,
 	TableCell,
 } from '@/components/ui/table';
+
 export default async function ProfilePage() {
 	const userId = await getCurrentUserId();
 
