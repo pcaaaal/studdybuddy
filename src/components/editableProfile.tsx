@@ -25,7 +25,7 @@ export default function EditableProfile({ user }: { user: any }) {
       <div className="flex items-center space-x-4">
         <Avatar className="w-16 h-16 rounded-full">
           <AvatarImage
-            src={`${process.env.PB_URL}/${process.env.NEXT_PUBLIC_PB_URL}/${profile.id}/${profile.avatar}`}
+            src={`${process.env.NEXT_PUBLIC_PB_URL}/${profile.id}/${profile.avatar}`}
             alt={profile.name}
           />
           <AvatarFallback>{profile.name?.charAt(0)}</AvatarFallback>
