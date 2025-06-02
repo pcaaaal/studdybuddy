@@ -1,9 +1,9 @@
-import {getStudyBuddiesByUserId} from '../lib/collections/studybuddy';
+import {getStudyBuddiesByUserId} from '../../lib/collections/studybuddy';
 import {
 	getAllStudyGroups,
 	getLocationsFromStudyGroup,
 	getStudyGroupsByUserId,
-} from '../lib/collections/studygroup';
+} from '../../lib/collections/studygroup';
 import {
 	Card,
 	CardHeader,
@@ -20,9 +20,9 @@ import {
 	TableCell,
 } from '@/components/ui/table';
 import Image from 'next/image';
-import {getCurrentUserId} from '../lib/getCurrentUserId';
-import {getUserByUserId} from '../lib/collections/user';
-import {StudyGroupDialog} from './components/StudyGroupDialog';
+import {getCurrentUserId} from '../../lib/getCurrentUserId';
+import {getUserByUserId} from '../../lib/collections/user';
+import {StudyGroupDialog} from '../../components/StudyGroupDialog';
 
 function capitalize(str: string) {
 	return str.charAt(0).toUpperCase() + str.slice(1);
@@ -74,7 +74,7 @@ export default async function HomePage() {
 									<TableRow>
 										<TableHead>Name</TableHead>
 										<TableHead>Location</TableHead>
-										<TableHead>Group Leader</TableHead>
+										<TableHead>Group Leader</TableHead>n
 									</TableRow>
 								</TableHeader>
 								<TableBody>
