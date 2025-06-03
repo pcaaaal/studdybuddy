@@ -17,10 +17,26 @@ export default function EditableProfile({ user }: { user: User }) {
 
   const handleSave = async () => {
     setIsSaving(true);
+
     try {
+      // Regex für E-Mail-Validierung
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+      // Validierung
+      if (!emailRegex.test(email)) {
+        alert("Please enter a valid email address in the format xxxx@xxx.xxx.");
+        setIsSaving(false);
+        return;
+      }
+
       const formData = new FormData();
       formData.append("name", name);
       formData.append("email", email);
+
+      // Füge das Feld `emailConfirm` hinzu, wenn die E-Mail geändert wird
+      if (email !== currentUser.email) {
+        formData.append("emailConfirm", email);
+      }
 
       // Avatar hochladen, falls vorhanden
       if (avatar) {

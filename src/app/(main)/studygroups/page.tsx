@@ -12,7 +12,14 @@ export default function StudyGroupsPage() {
     useEffect(() => {
         async function fetchStudyGroups() {
             const data = await getAllStudyGroups();
-            setGroups(data);
+
+            // Berechne die Anzahl der Mitglieder für jede Gruppe
+            const groupsWithMembers = data.map(group => ({
+                ...group,
+                membersCount: getUsersFromStudyGroup(group).length || 0, // Fallback auf 0, wenn keine Mitglieder vorhanden sind
+            }));
+
+            setGroups(groupsWithMembers);
         }
         fetchStudyGroups();
     }, []);
@@ -20,13 +27,17 @@ export default function StudyGroupsPage() {
     const filteredGroups = groups
         .filter(group => group.name.toLowerCase().includes(search.toLowerCase()))
         .sort((a, b) => {
-            if (sortKey === 'name') return a.name.localeCompare(b.name);
-            if (sortKey === 'members') return b.members.length - a.members.length;
+            if (sortKey === 'name') {
+                return a.name.localeCompare(b.name);
+            }
+            if (sortKey === 'members') {
+                return b.membersCount - a.membersCount; // Sortiere absteigend nach der Anzahl der Mitglieder
+            }
             return 0;
         });
 
     return (
-        <div className="space-y-8 max-w-5xl mx-auto px-4"> {/* Padding hinzugefügt */}
+        <div className="space-y-8 max-w-5xl mx-auto px-4">
             <h1 className="text-5xl font-extrabold text-center">Study Groups</h1>
 
             <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
@@ -49,7 +60,7 @@ export default function StudyGroupsPage() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filteredGroups.map((group, index) => {
-                    const users = getUsersFromStudyGroup(group); 
+                    const users = getUsersFromStudyGroup(group);
                     return (
                         <div
                             key={index}
