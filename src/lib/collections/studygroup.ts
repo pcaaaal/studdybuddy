@@ -27,6 +27,18 @@ export async function getStudyGroupsByUserId(userId: string) {
 	}
 }
 
+export async function getStudyGroupById(groupId: string) {
+	try {
+		const group = await pb.collection('studygroup').getOne(groupId, {
+			expand: 'location_studygroup_via_studygroup.location, user_studygroup_via_studygroup.user, leader',
+		});
+		return group;
+	} catch (err) {
+		console.error(`Failed to fetch study group with ID ${groupId}:`, err);
+		return null;
+	}
+}
+
 // PRIVATE
 async function fetchStudyGroupByIds(ids: string[]) {
 	if (ids.length === 0) return [];
@@ -168,10 +180,15 @@ export async function deleteUserFromStudyGroup(
 
 		// Delete the first matching link
 		await pb.collection('user_studygroup').delete(links[0].id);
-		console.log(`Successfully removed user ${userId} from group ${groupId}`);
+		console.log(
+			`Successfully removed user ${userId} from group ${groupId}`,
+		);
 		return {success: true};
 	} catch (err) {
-		console.error(`Failed to remove user ${userId} from group ${groupId}:`, err);
+		console.error(
+			`Failed to remove user ${userId} from group ${groupId}:`,
+			err,
+		);
 		throw err;
 	}
 }
@@ -182,9 +199,11 @@ export async function addUserToStudyGroup(
 ): Promise<{success: boolean}> {
 	try {
 		// Check if the user is already in the group
-		const existingLinks = await pb.collection('user_studygroup').getFullList({
-			filter: `studygroup = "${groupId}" && user = "${userId}"`,
-		});
+		const existingLinks = await pb
+			.collection('user_studygroup')
+			.getFullList({
+				filter: `studygroup = "${groupId}" && user = "${userId}"`,
+			});
 
 		if (existingLinks.length > 0) {
 			console.warn(`User ${userId} is already in group ${groupId}`);

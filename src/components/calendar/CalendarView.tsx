@@ -2,8 +2,7 @@
 
 import React, {useState, useMemo} from 'react';
 import {Button} from '@/components/ui/button';
-import {Switch} from '@/components/ui/switch';
-import {Card, CardHeader, CardTitle, CardContent} from '@/components/ui/card';
+import {Card, CardContent} from '@/components/ui/card';
 
 interface ScheduledEvent {
 	title: string;
@@ -18,16 +17,12 @@ export interface GroupWithSchedule {
 	schedule: ScheduledEvent[];
 }
 
-interface CalendarClientProps {
-	initialGroups: GroupWithSchedule[];
+interface CalendarViewProps {
+	groups: GroupWithSchedule[];
+	activeGroupFilters: string[];
 }
 
-export default function CalendarClient({initialGroups}: CalendarClientProps) {
-	const [groups] = useState<GroupWithSchedule[]>(initialGroups);
-	const [activeGroupFilters, setActiveGroupFilters] = useState<string[]>(
-		initialGroups.map((g) => g.id),
-	);
-
+export function CalendarView({groups, activeGroupFilters}: CalendarViewProps) {
 	const [currentMonth, setCurrentMonth] = useState<number>(
 		new Date().getMonth(),
 	);
@@ -35,20 +30,11 @@ export default function CalendarClient({initialGroups}: CalendarClientProps) {
 		new Date().getFullYear(),
 	);
 
-	// Toggle a study‐group filter on/off
-	const handleToggleGroup = (groupId: string) => {
-		setActiveGroupFilters((prev) =>
-			prev.includes(groupId)
-				? prev.filter((id) => id !== groupId)
-				: [...prev, groupId],
-		);
-	};
-
-	// How many days in a given month/year
+	// How many days in a month
 	const getDaysInMonth = (year: number, month: number): number =>
 		new Date(year, month + 1, 0).getDate();
 
-	// For a particular “day” number, return all visible events that match that ISO date
+	// For a given “day” number, return all visible events matching that ISO date
 	const getEventsForDay = (day: number) => {
 		const dateObj = new Date(currentYear, currentMonth, day);
 		const isoDate = dateObj.toISOString().split('T')[0]; // 'YYYY-MM-DD'
@@ -96,66 +82,15 @@ export default function CalendarClient({initialGroups}: CalendarClientProps) {
 	const monthName = useMemo(() => {
 		const name = new Date(currentYear, currentMonth).toLocaleString(
 			'default',
-			{month: 'long'},
+			{
+				month: 'long',
+			},
 		);
 		return name.charAt(0).toUpperCase() + name.slice(1);
 	}, [currentYear, currentMonth]);
 
 	return (
-		<div className="space-y-8 w-full">
-			{/* Group Filter Toggles */}
-			<Card className="p-4">
-				<CardHeader>
-					<CardTitle className="text-lg">
-						Filter Study Groups
-					</CardTitle>
-				</CardHeader>
-				<CardContent className="flex flex-wrap gap-4">
-					{groups.length === 0 ? (
-						<div>
-							<p className="text-md">
-								You are not part of any study groups yet.
-							</p>
-							<p className="text-sm text-gray-500">
-								Join a group to see its events in the calendar.
-								You can join groups on the StudyGroups page.
-							</p>
-						</div>
-					) : (
-						groups.map((group) => {
-							const isActive = activeGroupFilters.includes(
-								group.id,
-							);
-							return (
-								<div
-									key={group.id}
-									className="flex items-center space-x-2"
-								>
-									<Switch
-										id={`switch-${group.id}`}
-										style={{backgroundColor: group.color}}
-										checked={isActive}
-										onCheckedChange={() =>
-											handleToggleGroup(group.id)
-										}
-									/>
-									<label
-										htmlFor={`switch-${group.id}`}
-										className={`text-sm font-medium ${
-											isActive
-												? 'text-gray-900'
-												: 'text-gray-500'
-										}`}
-									>
-										{group.name}
-									</label>
-								</div>
-							);
-						})
-					)}
-				</CardContent>
-			</Card>
-
+		<div className="space-y-4 w-full">
 			{/* Month Navigation */}
 			<div className="flex justify-between items-center">
 				<Button
