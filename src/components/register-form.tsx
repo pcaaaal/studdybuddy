@@ -30,9 +30,12 @@ export function RegisterForm({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // Regex für E-Mail-Validierung
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
     // Validierung
-    if (!email.includes("@")) {
-      setError("Please enter a valid email address.");
+    if (!emailRegex.test(email)) {
+      setError("Please enter a valid email address in the format example@email.ch");
       return;
     }
 

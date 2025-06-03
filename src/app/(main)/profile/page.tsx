@@ -2,6 +2,7 @@ import {getCurrentUserId} from '@/lib/getCurrentUserId';
 import {getUserByUserId} from '@/lib/collections/user';
 import {getStudyGroupsByUserId} from '@/lib/collections/studygroup';
 import {getStudyBuddiesByUserId} from '@/lib/collections/studybuddy';
+import {deleteUserFromStudyGroup} from '@/lib/collections/studygroup';
 import EditableProfile from '@/components/editableProfile';
 import StudyGroupsTable from '@/components/StudyGroupTable';
 import StudyBuddiesTable from '@/components/StudyBuddiesTable'; // Neue Client-Komponente

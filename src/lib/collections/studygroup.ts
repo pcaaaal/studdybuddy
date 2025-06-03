@@ -1,4 +1,4 @@
-import {pb} from '../pocketbase';
+import { pb } from '../pocketbase';
 
 // PUBLIC API for our StudyGroup-Collection
 export async function getAllStudyGroups() {
@@ -81,8 +81,8 @@ export async function createStudyGroup({
 	audience,
 	leader,
 	tags = [],
-	locationIds = [], // array of location record IDs
-	userIds = [], // array of user record IDs
+	locationIds = [],
+	userIds = [],
 }) {
 	try {
 		// 1. Create main studygroup record
@@ -156,7 +156,7 @@ export async function deleteStudyGroup(groupId) {
 		// 3. Delete the studygroup record itself
 		await pb.collection('studygroup').delete(groupId);
 
-		return {success: true};
+		return { success: true };
 	} catch (err) {
 		console.error(`Failed to delete study group ${groupId}:`, err);
 		throw err;
@@ -166,21 +166,21 @@ export async function deleteStudyGroup(groupId) {
 export async function deleteUserFromStudyGroup(
 	groupId: string,
 	userId: string,
-): Promise<{success: boolean}> {
+): Promise<{ success: boolean }> {
 	try {
 		const links = await pb.collection('user_studygroup').getFullList({
 			filter: `studygroup = "${groupId}" && user = "${userId}"`,
 		});
 
 		if (links.length === 0) {
-			return {success: false};
+			return { success: false };
 		}
 
 		await pb.collection('user_studygroup').delete(links[0].id);
 		console.log(
 			`Successfully removed user ${userId} from group ${groupId}`,
 		);
-		return {success: true};
+		return { success: true };
 	} catch (err) {
 		console.error(
 			`Failed to remove user ${userId} from group ${groupId}:`,
@@ -193,9 +193,8 @@ export async function deleteUserFromStudyGroup(
 export async function addUserToStudyGroup(
 	groupId: string,
 	userId: string,
-): Promise<{success: boolean}> {
+): Promise<{ success: boolean }> {
 	try {
-		// Check if the user is already in the group
 		const existingLinks = await pb
 			.collection('user_studygroup')
 			.getFullList({
@@ -204,16 +203,15 @@ export async function addUserToStudyGroup(
 
 		if (existingLinks.length > 0) {
 			console.warn(`User ${userId} is already in group ${groupId}`);
-			return {success: false}; 
+			return { success: false };
 		}
 
-		// Create a new link record
 		await pb.collection('user_studygroup').create({
 			studygroup: groupId,
 			user: userId,
 		});
 		console.log(`Successfully added user ${userId} to group ${groupId}`);
-		return {success: true};
+		return { success: true };
 	} catch (err) {
 		console.error(`Failed to add user ${userId} to group ${groupId}:`, err);
 		throw err;

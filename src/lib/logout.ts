@@ -1,5 +1,5 @@
 // lib/logout.ts
-import {pb} from './pocketbase';
+import { pb } from './pocketbase';
 
 export async function logout() {
 	console.log('Logging out...');
