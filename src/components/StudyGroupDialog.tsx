@@ -84,6 +84,17 @@ export function StudyGroupDialog({
 						))}
 					</ul>
 				</div>
+				{/* Button to navigate to the Study Group detail page */}
+				<div className="mt-6">
+					<button
+						className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+						onClick={() =>
+							(window.location.href = `/studygroups/${group.id}`)
+						}
+					>
+						View Details
+					</button>
+				</div>
 			</DialogContent>
 		</Dialog>
 	);
