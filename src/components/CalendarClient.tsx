@@ -111,34 +111,48 @@ export default function CalendarClient({initialGroups}: CalendarClientProps) {
 					</CardTitle>
 				</CardHeader>
 				<CardContent className="flex flex-wrap gap-4">
-					{groups.map((group) => {
-						const isActive = activeGroupFilters.includes(group.id);
-						return (
-							<div
-								key={group.id}
-								className="flex items-center space-x-2"
-							>
-								<Switch
-									id={`switch-${group.id}`}
-									style={{backgroundColor: group.color}}
-									checked={isActive}
-									onCheckedChange={() =>
-										handleToggleGroup(group.id)
-									}
-								/>
-								<label
-									htmlFor={`switch-${group.id}`}
-									className={`text-sm font-medium ${
-										isActive
-											? 'text-gray-900'
-											: 'text-gray-500'
-									}`}
+					{groups.length === 0 ? (
+						<div>
+							<p className="text-md">
+								You are not part of any study groups yet.
+							</p>
+							<p className="text-sm text-gray-500">
+								Join a group to see its events in the calendar.
+								You can join groups on the StudyGroups page.
+							</p>
+						</div>
+					) : (
+						groups.map((group) => {
+							const isActive = activeGroupFilters.includes(
+								group.id,
+							);
+							return (
+								<div
+									key={group.id}
+									className="flex items-center space-x-2"
 								>
-									{group.name}
-								</label>
-							</div>
-						);
-					})}
+									<Switch
+										id={`switch-${group.id}`}
+										style={{backgroundColor: group.color}}
+										checked={isActive}
+										onCheckedChange={() =>
+											handleToggleGroup(group.id)
+										}
+									/>
+									<label
+										htmlFor={`switch-${group.id}`}
+										className={`text-sm font-medium ${
+											isActive
+												? 'text-gray-900'
+												: 'text-gray-500'
+										}`}
+									>
+										{group.name}
+									</label>
+								</div>
+							);
+						})
+					)}
 				</CardContent>
 			</Card>
 
@@ -148,13 +162,13 @@ export default function CalendarClient({initialGroups}: CalendarClientProps) {
 					variant="outline"
 					onClick={() => handleMonthChange('prev')}
 				>
-					← Voriger Monat
+					← Previous month
 				</Button>
 				<h2 className="text-2xl font-semibold">
 					{monthName} {currentYear}
 				</h2>
 				<Button onClick={() => handleMonthChange('next')}>
-					Nächster Monat →
+					Next month →
 				</Button>
 			</div>
 
@@ -181,12 +195,24 @@ export default function CalendarClient({initialGroups}: CalendarClientProps) {
 							const day = idx + 1;
 							const events = getEventsForDay(day);
 
+							const today = new Date();
+							const isToday =
+								today.getFullYear() === currentYear &&
+								today.getMonth() === currentMonth &&
+								day === today.getDate();
+
 							return (
 								<div
 									key={day}
 									className="border rounded-md p-2 h-28 text-left relative"
 								>
-									<div className="text-xs font-semibold text-gray-400 absolute top-1 right-2">
+									<div
+										className={`absolute top-1 right-2 flex items-center justify-center text-xs font-semibold ${
+											isToday
+												? 'bg-red-500 text-white rounded-full w-6 h-6'
+												: 'text-gray-400'
+										}`}
+									>
 										{day}
 									</div>
 									<div className="space-y-1 mt-5">

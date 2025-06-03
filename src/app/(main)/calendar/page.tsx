@@ -37,7 +37,6 @@ export default async function CalendarPage() {
 
 	// 3. Fetch all study‐groups for this user
 	const userGroups: any = await getStudyGroupsByUserId(userId);
-	console.log(`User groups fetched:`, userGroups);
 
 	// 4. For each group, fetch its events (with unique cancelToken) and build schedule[]
 	const detailedGroups: GroupWithSchedule[] = await Promise.all(
