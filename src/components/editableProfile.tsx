@@ -11,7 +11,6 @@ export default function EditableProfile({ user }: { user: User }) {
   const [isEditing, setIsEditing] = React.useState(false);
   const [isSaving, setIsSaving] = React.useState(false);
   const [name, setName] = React.useState(user.name || "");
-  const [email, setEmail] = React.useState(user.email || "");
   const [avatar, setAvatar] = React.useState<File | null>(null);
   const [currentUser, setCurrentUser] = React.useState(user); // Benutzerzustand
 
@@ -19,24 +18,8 @@ export default function EditableProfile({ user }: { user: User }) {
     setIsSaving(true);
 
     try {
-      // Regex für E-Mail-Validierung
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-      // Validierung
-      if (!emailRegex.test(email)) {
-        alert("Please enter a valid email address in the format xxxx@xxx.xxx.");
-        setIsSaving(false);
-        return;
-      }
-
       const formData = new FormData();
       formData.append("name", name);
-      formData.append("email", email);
-
-      // Füge das Feld `emailConfirm` hinzu, wenn die E-Mail geändert wird
-      if (email !== currentUser.email) {
-        formData.append("emailConfirm", email);
-      }
 
       // Avatar hochladen, falls vorhanden
       if (avatar) {
@@ -59,7 +42,6 @@ export default function EditableProfile({ user }: { user: User }) {
   const handleCancel = () => {
     // Änderungen verwerfen und Bearbeitungsmodus verlassen
     setName(currentUser.name || "");
-    setEmail(currentUser.email || "");
     setAvatar(null);
     setIsEditing(false);
   };
@@ -89,18 +71,6 @@ export default function EditableProfile({ user }: { user: User }) {
               id="name"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              required
-            />
-          </div>
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-              Email
-            </label>
-            <Input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
               required
             />
           </div>
