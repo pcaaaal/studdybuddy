@@ -5,14 +5,11 @@ FROM node:18
 WORKDIR /app
 
 # Dependencies installieren
-COPY nextjs-app/package*.json ./
+COPY ./ ./
 RUN npm install
 
-# App kopieren
-COPY nextjs-app/ .
-
 # App builden
-RUN npm run build
+RUN npm run dev
 
 # Startbefehl
 CMD ["npm", "run", "start"]
