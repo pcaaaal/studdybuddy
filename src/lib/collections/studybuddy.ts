@@ -1,4 +1,5 @@
-import {pb} from '../pocketbase'; // adjust path if needed
+import { pb } from "../pocketbase"; // PocketBase-Instanz importieren
+import { getUsersByIds } from "./user";
 
 // Get all studybuddy user records (all buddies of all users)
 export async function getAllStudyBuddies() {
@@ -11,36 +12,66 @@ export async function getAllStudyBuddies() {
 	);
 
 	// Fetch user records for those IDs
-	return fetchUsersByIds(userBIds);
+	return getUsersByIds(userBIds);
 }
 
-// Get studybuddy user records for a specific user_a id
 export async function getStudyBuddiesByUserId(userId: string) {
-	// Fetch links where user_a = userId
-	const studybuddyLinks = await pb.collection('studybuddy').getFullList({
-		filter: `user_a = "${userId}"`,
-	});
+  try {
+    // Fetch all studybuddy links for the given user
+    const studybuddyLinks = await pb.collection("studybuddy").getFullList({
+      filter: `user_a = "${userId}" || user_b = "${userId}"`,
+    });
 
-	// Extract user_b IDs
-	const userBIds = studybuddyLinks.map((link) => link.user_b).filter(Boolean);
+    console.log(
+      `Fetched ${studybuddyLinks.length} studybuddy links for user ${userId}`
+    );
+    console.log(
+      `Studybuddy links: ${JSON.stringify(studybuddyLinks, null, 2)}`
+    );
 
-	// Fetch user records for those IDs
-	return fetchUsersByIds(userBIds);
+    // Extract all unique buddy IDs (exclude the current user)
+    const buddyIds = Array.from(
+      new Set(
+        studybuddyLinks.map((link) =>
+          link.user_a === userId ? link.user_b : link.user_a
+        )
+      )
+    ).filter((id) => id !== userId); // Exclude the current user
+
+    // Fetch user records for those IDs
+    const buddies = await getUsersByIds(buddyIds);
+
+	console.log(`Fetched ${buddies.length} buddies for user ${userId}`);
+	console.log(`Buddies: ${JSON.stringify(buddies, null, 2)}`);
+
+    return buddies;
+  } catch (err) {
+    console.error(`Failed to fetch study buddies for user ${userId}:`, err);
+    return [];
+  }
 }
 
-// Helper: fetch multiple user records by array of ids
-async function fetchUsersByIds(ids: string[]) {
-	if (ids.length === 0) return [];
-
-	const users = await Promise.all(
-		ids.map(async (id) => {
-			try {
-				return await pb.collection('users').getOne(id);
-			} catch {
-				return null;
-			}
-		}),
+export async function removeStudyBuddy(
+  userAId: string,
+  userBId: string
+) {
+  try {
+	// Find the studybuddy link between userA and userB
+	const link = await pb.collection("studybuddy").getFirstListItem(
+	  `user_a = "${userAId}" && user_b = "${userBId}" || user_a = "${userBId}" && user_b = "${userAId}"`
 	);
 
-	return users.filter(Boolean);
+	if (!link) {
+	  console.warn(`No study buddy link found between ${userAId} and ${userBId}`);
+	  return false;
+	}
+
+	// Delete the studybuddy link
+	await pb.collection("studybuddy").delete(link.id);
+	console.log(`Removed study buddy link between ${userAId} and ${userBId}`);
+	return true;
+  } catch (err) {
+	console.error(`Failed to remove study buddy between ${userAId} and ${userBId}:`, err);
+	return false;
+  }
 }

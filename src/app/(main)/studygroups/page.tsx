@@ -59,7 +59,7 @@ export default function StudyGroupsPage() {
                                 className="w-2"
                                 style={{ backgroundColor: group.color || '#E5E7EB' }}
                             />
-                            <div className="p-5 flex-1">
+                            <div className="p-5 flex-1 min-w-60 max-w-600">
                                 <h2 className="text-xl font-bold text-blue-600 mb-2">{group.name}</h2>
                                 <p className="text-sm text-gray-600 mb-3">{group.description}</p>
                                 <p className="text-xs text-gray-400">

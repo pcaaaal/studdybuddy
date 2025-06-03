@@ -27,3 +27,13 @@ export async function getEventsByStudyGroupId(studyGroupId: string) {
 		return [];
 	}
 }
+
+export async function createEvent(data: Record<string, any>) {
+	try {
+		const event = await pb.collection('event').create(data);
+		return event;
+	} catch (err) {
+		console.error('Failed to create event:', err);
+		throw err; // Re-throw to handle it in the calling function
+	}
+}
