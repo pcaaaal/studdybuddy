@@ -1,154 +1,75 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-'use client';
 
-import { useState, useEffect } from 'react';
+// app/calendar/page.tsx
+import React from 'react';
+import {getCurrentUserId} from '../../../lib/getCurrentUserId';
+import {getStudyGroupsByUserId} from '../../../lib/collections/studygroup';
+import {getEventsByStudyGroupId} from '../../../lib/collections/events';
+import CalendarClient from '../../../components/CalendarClient';
 
-export default function CalendarPage() {
-    const [groups, setGroups] = useState<any[]>([]);
-    const [activeGroupFilters, setActiveGroupFilters] = useState<string[]>([]);
-    const [currentMonth, setCurrentMonth] = useState(5); // Mai (0-basiert)
-    const [currentYear, setCurrentYear] = useState(2025);
+interface ScheduledEvent {
+	title: string;
+	date: string; // 'YYYY-MM-DD'
+	time: string; // 'HH:mm'
+}
 
-    useEffect(() => {
-        const userId = 1;
-        fetch(`http://localhost:3001/user-study-groups/${userId}`)
-            .then(res => res.json())
-            .then(async (groupList) => {
-                setActiveGroupFilters(groupList.map((g: any) => g.id.toString()));
+export interface GroupWithSchedule {
+	id: string;
+	name: string;
+	color: string;
+	schedule: ScheduledEvent[];
+}
 
-                const detailedGroups = await Promise.all(
-                    groupList.map(async (g: any) => {
-                        const eventsRes = await fetch(`http://localhost:3001/events/${g.id}`);
-                        const events = await eventsRes.json();
-                        return {
-                            id: g.id,
-                            name: g.name,
-                            color: g.color || 'bg-gray-200',
-                            schedule: events.map((e: any) => ({
-                                weekday: new Date(e.date).getDay(),
-                                time: e.time,
-                                date: e.date
-                            }))
-                        };
-                    })
-                );
+export default async function CalendarPage() {
+	// 1. Get the current user ID (reads cookies, server‐side)
+	const userId = await getCurrentUserId();
 
-                setGroups(detailedGroups);
-            });
-    }, []);
+	// 2. If not logged in, show a placeholder
+	if (!userId) {
+		return (
+			<div className="p-8 text-center">
+				<h1 className="text-2xl font-semibold">
+					Please log in to view your calendar.
+				</h1>
+			</div>
+		);
+	}
 
-    const handleToggleGroup = (groupId: string) => {
-        setActiveGroupFilters((prev) =>
-            prev.includes(groupId) ? prev.filter((id) => id !== groupId) : [...prev, groupId]
-        );
-    };
+	// 3. Fetch all study‐groups for this user
+	const userGroups: any = await getStudyGroupsByUserId(userId);
 
-    const getDaysInMonth = (year: number, month: number) => {
-        return new Date(year, month + 1, 0).getDate();
-    };
+	// 4. For each group, fetch its events (with unique cancelToken) and build schedule[]
+	const detailedGroups: GroupWithSchedule[] = await Promise.all(
+		userGroups.map(async (group: any) => {
+			const rawEvents: any = await getEventsByStudyGroupId(group.id);
+			const schedule: ScheduledEvent[] = rawEvents.map((evt: any) => {
+				const title = evt.title;
+				const dt = new Date(evt.date);
+				const isoDate = dt.toISOString().split('T')[0]; // 'YYYY-MM-DD'
+				// adjust hours/minutes if needed (e.g. timezone offset)
+				const hours = dt.getHours().toString().padStart(2, '0');
+				const minutes = dt.getMinutes().toString().padStart(2, '0');
+				return {
+					title: title,
+					date: isoDate,
+					time: `${hours}:${minutes}`,
+				};
+			});
 
-    const getEventsForDay = (day: number) => {
-        const dateObj = new Date(currentYear, currentMonth, day);
-        const isoDate = dateObj.toISOString().split('T')[0];
-        return groups
-            .filter((group) => activeGroupFilters.includes(group.id.toString()))
-            .flatMap((group) =>
-                group.schedule
-                    .filter((s: any) => s.date === isoDate)
-                    .map((s: any) => ({
-                        id: group.id,
-                        title: group.name,
-                        time: s.time,
-                        color: group.color
-                    }))
-            );
-    };
+			return {
+				id: group.id,
+				name: group.name,
+				color: group.color || '#a1a1a1',
+				schedule,
+			};
+		}),
+	);
 
-    const handleMonthChange = (dir: 'next' | 'prev') => {
-        let newMonth = currentMonth + (dir === 'next' ? 1 : -1);
-        let newYear = currentYear;
-
-        if (newMonth < 0) {
-            newMonth = 11;
-            newYear--;
-        } else if (newMonth > 11) {
-            newMonth = 0;
-            newYear++;
-        }
-
-        setCurrentMonth(newMonth);
-        setCurrentYear(newYear);
-    };
-
-    const daysInMonth = getDaysInMonth(currentYear, currentMonth);
-    const firstDay = new Date(currentYear, currentMonth, 1).getDay();
-
-    return (
-        <div className="space-y-8">
-            <h1 className="text-5xl font-extrabold">Calendar</h1>
-            <p className="text-gray-600">Events of your subscribed groups. Switch months & toggle groups.</p>
-
-            <div className="flex flex-wrap gap-2">
-                {groups.map((group) => (
-                    <button
-                        key={group.id}
-                        onClick={() => handleToggleGroup(group.id.toString())}
-                        className={`px-4 py-1 rounded border text-black border-gray-300 hover:bg-gray-100 transition-colors
-                            ${activeGroupFilters.includes(group.id.toString()) ? 'bg-gray-200' : 'bg-white'}`}
-                    >
-                        {group.name}
-                    </button>
-                ))}
-            </div>
-
-            <div className="flex justify-between items-center">
-                <button
-                    className="bg-gray-200 text-black px-4 py-2 rounded"
-                    onClick={() => handleMonthChange('prev')}
-                >
-                    ← Voriger Monat
-                </button>
-                <span className="text-lg font-semibold">
-                    {new Date(currentYear, currentMonth).toLocaleString('default', { month: 'long' })} {currentYear}
-                </span>
-                <button
-                    className="bg-blue-600 text-white px-4 py-2 rounded"
-                    onClick={() => handleMonthChange('next')}
-                >
-                    Nächster Monat →
-                </button>
-            </div>
-
-            <div className="bg-white shadow rounded p-6">
-                <div className="grid grid-cols-7 gap-2 text-center text-sm font-medium text-gray-600 mb-2">
-                    {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((d) => (
-                        <div key={d}>{d}</div>
-                    ))}
-                </div>
-
-                <div className="grid grid-cols-7 gap-2 text-sm">
-                    {Array.from({ length: firstDay }).map((_, index) => (
-                        <div key={`empty-${index}`} className="h-28" />
-                    ))}
-                    {Array.from({ length: daysInMonth }).map((_, index) => {
-                        const day = index + 1;
-                        const events = getEventsForDay(day);
-                        return (
-                            <div key={day} className="border rounded p-2 h-28 text-left relative">
-                                <div className="text-xs font-semibold text-gray-400 absolute top-1 right-2">{day}</div>
-                                <div className="space-y-1 mt-5">
-                                    {events.map((e, i) => (
-                                        <div key={e.title + e.time + i} className={`${e.color} text-xs p-1 rounded`}>
-                                            {e.title.slice(0, 18)}...
-                                            <div className="text-[10px]">{e.time}</div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        );
-                    })}
-                </div>
-            </div>
-        </div>
-    );
+	// 5. Render the client component, passing detailedGroups as a prop
+	return (
+		<div className="container px-8">
+			<h1 className="text-5xl font-extrabold mb-4">Calendar</h1>
+			<CalendarClient initialGroups={detailedGroups} />
+		</div>
+	);
 }

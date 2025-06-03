@@ -13,8 +13,10 @@ export async function getAllEvents() {
 
 export async function getEventsByStudyGroupId(studyGroupId: string) {
 	try {
+		console.log(`Fetching events for study group: ${studyGroupId}`);
 		const events = await pb.collection('event').getFullList({
 			filter: `studygroup = "${studyGroupId}"`,
+			requestKey: null,
 		});
 		return events;
 	} catch (err) {
