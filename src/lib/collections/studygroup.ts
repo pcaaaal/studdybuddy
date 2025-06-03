@@ -222,3 +222,21 @@ export async function addUserToStudyGroup(
 		throw err;
 	}
 }
+
+export async function isUserInStudyGroup(
+	groupId: string,
+	userId: string,
+): Promise<boolean> {
+	try {
+		const links = await pb.collection('user_studygroup').getFullList({
+			filter: `studygroup = "${groupId}" && user = "${userId}"`,
+		});
+		return links.length > 0; // Returns true if any links found
+	} catch (err) {
+		console.error(
+			`Failed to check if user ${userId} is in group ${groupId}:`,
+			err,
+		);
+		return false;
+	}
+}
