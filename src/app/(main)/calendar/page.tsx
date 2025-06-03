@@ -8,6 +8,7 @@ import {getEventsByStudyGroupId} from '../../../lib/collections/events';
 import CalendarClient from '../../../components/CalendarClient';
 
 interface ScheduledEvent {
+	title: string;
 	date: string; // 'YYYY-MM-DD'
 	time: string; // 'HH:mm'
 }
@@ -42,21 +43,24 @@ export default async function CalendarPage() {
 	const detailedGroups: GroupWithSchedule[] = await Promise.all(
 		userGroups.map(async (group: any) => {
 			const rawEvents: any = await getEventsByStudyGroupId(group.id);
-			console.log(`Events for group ${group.id}:`, rawEvents);
-
 			const schedule: ScheduledEvent[] = rawEvents.map((evt: any) => {
+				const title = evt.title;
 				const dt = new Date(evt.date);
 				const isoDate = dt.toISOString().split('T')[0]; // 'YYYY-MM-DD'
 				// adjust hours/minutes if needed (e.g. timezone offset)
 				const hours = dt.getHours().toString().padStart(2, '0');
 				const minutes = dt.getMinutes().toString().padStart(2, '0');
-				return {date: isoDate, time: `${hours}:${minutes}`};
+				return {
+					title: title,
+					date: isoDate,
+					time: `${hours}:${minutes}`,
+				};
 			});
 
 			return {
 				id: group.id,
 				name: group.name,
-				color: group.color || 'bg-gray-200',
+				color: group.color || '#a1a1a1',
 				schedule,
 			};
 		}),

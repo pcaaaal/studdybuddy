@@ -4,9 +4,9 @@ import React, {useState, useMemo} from 'react';
 import {Button} from '@/components/ui/button';
 import {Switch} from '@/components/ui/switch';
 import {Card, CardHeader, CardTitle, CardContent} from '@/components/ui/card';
-import {Separator} from '@/components/ui/separator';
 
 interface ScheduledEvent {
+	title: string;
 	date: string; // 'YYYY-MM-DD'
 	time: string; // 'HH:mm'
 }
@@ -59,7 +59,7 @@ export default function CalendarClient({initialGroups}: CalendarClientProps) {
 				group.schedule
 					.filter((s) => s.date === isoDate)
 					.map((s) => ({
-						title: group.name,
+						title: s.title,
 						time: s.time,
 						color: group.color,
 					})),
@@ -120,6 +120,7 @@ export default function CalendarClient({initialGroups}: CalendarClientProps) {
 							>
 								<Switch
 									id={`switch-${group.id}`}
+									style={{backgroundColor: group.color}}
 									checked={isActive}
 									onCheckedChange={() =>
 										handleToggleGroup(group.id)
@@ -135,9 +136,6 @@ export default function CalendarClient({initialGroups}: CalendarClientProps) {
 								>
 									{group.name}
 								</label>
-								<span
-									className={`w-3 h-3 rounded-full ${group.color}`}
-								/>
 							</div>
 						);
 					})}
@@ -161,11 +159,7 @@ export default function CalendarClient({initialGroups}: CalendarClientProps) {
 			</div>
 
 			{/* Calendar Grid */}
-			<Card className="bg-white shadow rounded">
-				<CardHeader className="px-4 py-2">
-					<CardTitle className="text-lg">Calendar View</CardTitle>
-				</CardHeader>
-				<Separator />
+			<Card className="bg-white shadow">
 				<CardContent className="p-4">
 					{/* Weekday Headers */}
 					<div className="grid grid-cols-7 gap-2 text-center text-sm font-medium text-gray-600 mb-2">
@@ -190,28 +184,43 @@ export default function CalendarClient({initialGroups}: CalendarClientProps) {
 							return (
 								<div
 									key={day}
-									className="border rounded p-2 h-28 text-left relative"
+									className="border rounded-md p-2 h-28 text-left relative"
 								>
 									<div className="text-xs font-semibold text-gray-400 absolute top-1 right-2">
 										{day}
 									</div>
 									<div className="space-y-1 mt-5">
-										{events.map((evt, i) => (
+										{events.slice(0, 2).map((evt, i) => (
 											<div
 												key={`${evt.title}-${evt.time}-${i}`}
-												className={`${evt.color} text-xs p-1 rounded`}
+												className="text-xs p-1 rounded flex text-center justify-between items-center"
+												style={{
+													border: `1px solid ${evt.color}`,
+													backgroundColor: evt.color,
+													backgroundImage:
+														'linear-gradient(rgba(255,255,255,0.5), rgba(255,255,255,0.5))',
+													backgroundBlendMode:
+														'overlay',
+												}}
 											>
-												{evt.title.length > 18
-													? `${evt.title.slice(
-															0,
-															18,
-													  )}...`
-													: evt.title}
+												<div>
+													{evt.title.length > 10
+														? `${evt.title.slice(
+																0,
+																10,
+														  )}...`
+														: evt.title}
+												</div>
 												<div className="text-[10px]">
 													{evt.time}
 												</div>
 											</div>
 										))}
+										{events.length > 2 && (
+											<div className="text-xs font-medium text-gray-600">
+												and {events.length - 2} more
+											</div>
+										)}
 									</div>
 								</div>
 							);
