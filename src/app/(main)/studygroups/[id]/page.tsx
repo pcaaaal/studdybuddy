@@ -1,200 +1,42 @@
-'use client';
-
-import { redirect, useParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { redirect } from 'next/navigation';
+import { getCurrentUserId } from '../../../../lib/getCurrentUserId';
 import { pb } from '../../../../lib/pocketbase';
+import StudyGroupClient from '../../../../components/StudyGroupClient';
 
-export default function StudyGroupDetailPage() {
-	const { id } = useParams();
-	const [group, setGroup] = useState<any>(null);
-	const [members, setMembers] = useState<any[]>([]);
-	const [events, setEvents] = useState<any[]>([]);
-	const [subscribed, setSubscribed] = useState(false);
-	const userId = 1;
+export default async function StudyGroupDetailPage({ params }: { params: { id: string } }) {
+  const userId = await getCurrentUserId();
 
-	const [currentMonth, setCurrentMonth] = useState(5);
-	const [currentYear, setCurrentYear] = useState(2025);
+  if (!userId) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="bg-white shadow rounded-lg p-6">
+          <h1 className="text-2xl font-semibold">Please log in to continue</h1>
+        </div>
+      </div>
+    );
+  }
 
-	useEffect(() => {
-		if (!id) {
-			redirect('/studygroups');
-		}
+  const { id } = params;
 
-		pb.collection('studygroup')
-			.getOne(id, {
-				expand: 'location_studygroup_via_studygroup.location, user_studygroup_via_studygroup.user, leader',
-			})
-			.then((found) => {
-				if (found) {
-					setGroup(found);
-					const membersList = getUsersFromStudyGroup(found);
-					setMembers(membersList);
-					setSubscribed(membersList.some((m: any) => m.id === userId));
-				}
-			});
+  if (!id) {
+    redirect('/studygroups');
+  }
 
-		pb.collection('event')
-			.getFullList({
-				filter: `studygroup = "${id}"`,
-			})
-			.then(setEvents);
-	}, [id]);
+  // Fetch group details
+  const group = await pb.collection('studygroup').getOne(id, {
+    expand: 'location_studygroup_via_studygroup.location, user_studygroup_via_studygroup.user, leader',
+  });
 
-	const toggleSubscription = () => {
-		const newState = !subscribed;
-		setSubscribed(newState);
+  // Fetch events for the group
+  const events = await pb.collection('event').getFullList({
+    filter: `studygroup = "${id}"`,
+  });
 
-		const url = `http://localhost:3001/group-members${newState ? '' : `/${id}/${userId}`}`;
-		const method = newState ? 'POST' : 'DELETE';
-		const body = newState
-			? JSON.stringify({ user_id: userId, group_id: id })
-			: null;
-
-		fetch(url, {
-			method,
-			headers: { 'Content-Type': 'application/json' },
-			...(body && { body }),
-		})
-			.then((res) => res.json())
-			.then(() => {
-				pb.collection('studygroup')
-					.getOne(id, {
-						expand: 'user_studygroup_via_studygroup.user',
-					})
-					.then((updatedGroup) => {
-						const updatedMembers = getUsersFromStudyGroup(updatedGroup);
-						setMembers(updatedMembers);
-						setGroup({
-							...group,
-							members: updatedMembers.map((m: any) => m.name).join(', '),
-						});
-					});
-			});
-	};
-
-	const handleMonthChange = (dir: 'next' | 'prev') => {
-		let newMonth = currentMonth + (dir === 'next' ? 1 : -1);
-		let newYear = currentYear;
-
-		if (newMonth < 0) {
-			newMonth = 11;
-			newYear--;
-		} else if (newMonth > 11) {
-			newMonth = 0;
-			newYear++;
-		}
-
-		setCurrentMonth(newMonth);
-		setCurrentYear(newYear);
-	};
-
-	const getDaysInMonth = (year: number, month: number) => {
-		return new Date(year, month + 1, 0).getDate();
-	};
-
-	const getEventsForDay = (day: number) => {
-		const dateObj = new Date(currentYear, currentMonth, day);
-		const isoDate = dateObj.toISOString().split('T')[0];
-
-		return events.filter((e: any) => {
-			const eventDate = new Date(e.date);
-			return eventDate.toISOString().split('T')[0] === isoDate;
-		});
-	};
-
-
-	const daysInMonth = getDaysInMonth(currentYear, currentMonth);
-	const firstDay = new Date(currentYear, currentMonth, 1).getDay();
-
-	if (!group) return <p>Loading...</p>;
-
-	return (
-		<div className="flex flex-col lg:flex-row gap-6">
-			<div className="flex-1 space-y-4">
-				<div className="bg-white shadow rounded p-6">
-					<h1 className="text-3xl font-bold mb-2">{group.name}</h1>
-					<p className="text-gray-700">{group.description}</p>
-				</div>
-
-				<div className="bg-white shadow rounded p-6">
-					<h2 className="text-xl font-semibold mb-2">Members</h2>
-					<ul className="list-disc pl-5 text-sm">
-						{members.map((member) => (
-							<li key={member.id}>{member.name}</li>
-						))}
-					</ul>
-				</div>
-
-				<div className="bg-white shadow rounded p-6">
-					<button
-						onClick={toggleSubscription}
-						className={`w-full px-4 py-2 rounded text-white ${subscribed ? 'bg-red-500' : 'bg-blue-600'
-							}`}
-					>
-						{subscribed ? 'Unsubscribe' : 'Subscribe'}
-					</button>
-				</div>
-			</div>
-
-			<div className="w-full lg:w-[66vw] bg-white shadow rounded p-6">
-				<div className="flex justify-between items-center mb-4">
-					<button
-						className="bg-gray-200 text-black px-4 py-2 rounded"
-						onClick={() => handleMonthChange('prev')}
-					>
-						← Previous
-					</button>
-					<span className="text-lg font-semibold">
-						{new Date(currentYear, currentMonth).toLocaleString('default', { month: 'long' })}{' '}
-						{currentYear}
-					</span>
-					<button
-						className="bg-blue-600 text-white px-4 py-2 rounded"
-						onClick={() => handleMonthChange('next')}
-					>
-						Next →
-					</button>
-				</div>
-
-				<div className="grid grid-cols-7 gap-2 text-center text-sm font-medium text-gray-600 mb-2">
-					{['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((d) => (
-						<div key={d}>{d}</div>
-					))}
-				</div>
-
-				<div className="grid grid-cols-7 gap-2 text-sm">
-					{Array.from({ length: firstDay }).map((_, index) => (
-						<div key={`empty-${index}`} className="h-28" />
-					))}
-					{Array.from({ length: daysInMonth }).map((_, index) => {
-						const day = index + 1;
-						const dayEvents = getEventsForDay(day);
-						console
-						return (
-							<div key={day} className="border rounded p-2 h-28 text-left relative">
-								<div className="text-xs font-semibold text-gray-400 absolute top-1 right-2">
-									{day}
-								</div>
-								<div className="space-y-1 mt-5">
-									{dayEvents.map((e: any, i: number) => (
-										<div key={e.title + e.date + i} className="bg-purple-200 text-xs p-1 rounded">
-											{e.title.slice(0, 18)}...
-											<div className="text-[10px]">{e.date}</div>
-										</div>
-									))}
-								</div>
-							</div>
-						);
-					})}
-				</div>
-			</div>
-		</div>
-	);
-}
-
-function getUsersFromStudyGroup(group: any) {
-	const links = group.expand?.user_studygroup_via_studygroup ?? [];
-	return links
-		.map((link) => link.expand?.user)
-		.filter((user) => Boolean(user));
+  return (
+    <StudyGroupClient
+      userId={userId}
+      group={group}
+      events={events}
+    />
+  );
 }

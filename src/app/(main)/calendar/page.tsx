@@ -5,7 +5,7 @@ import React from 'react';
 import { getCurrentUserId } from '../../../lib/getCurrentUserId';
 import { getStudyGroupsByUserId } from '../../../lib/collections/studygroup';
 import { getEventsByStudyGroupId } from '../../../lib/collections/events';
-import CalendarClient from '../../../components/CalendarClient';
+import CalendarClient from '@/components/calendar/CalendarClient';
 
 interface ScheduledEvent {
   title: string;
@@ -19,6 +19,8 @@ export interface GroupWithSchedule {
   color: string;
   schedule: ScheduledEvent[];
 }
+
+
 
 export default async function CalendarPage() {
   // 1. Get the current user ID (reads cookies, server‐side)

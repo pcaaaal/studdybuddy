@@ -1,6 +1,6 @@
 import {pb} from '../pocketbase';
 
-// PUBLIC API
+// PUBLIC API for our StudyGroup-Collection
 export async function getAllStudyGroups() {
 	try {
 		const studygroups = await pb.collection('studygroup').getFullList({
@@ -24,6 +24,18 @@ export async function getStudyGroupsByUserId(userId: string) {
 	} catch (err) {
 		console.error(`Failed to fetch study groups for user ${userId}:`, err);
 		return [];
+	}
+}
+
+export async function getStudyGroupById(groupId: string) {
+	try {
+		const group = await pb.collection('studygroup').getOne(groupId, {
+			expand: 'location_studygroup_via_studygroup.location, user_studygroup_via_studygroup.user, leader',
+		});
+		return group;
+	} catch (err) {
+		console.error(`Failed to fetch study group with ID ${groupId}:`, err);
+		return null;
 	}
 }
 
@@ -62,7 +74,6 @@ export function getUsersFromStudyGroup(group) {
 		.filter((user) => Boolean(user));
 }
 
-// CREATE a new study group and associated links
 export async function createStudyGroup({
 	name,
 	description,
@@ -157,21 +168,24 @@ export async function deleteUserFromStudyGroup(
 	userId: string,
 ): Promise<{success: boolean}> {
 	try {
-		// Find the link record for this user in the study group
 		const links = await pb.collection('user_studygroup').getFullList({
 			filter: `studygroup = "${groupId}" && user = "${userId}"`,
 		});
 
 		if (links.length === 0) {
-			return {success: false}; // No link found
+			return {success: false};
 		}
 
-		// Delete the first matching link
 		await pb.collection('user_studygroup').delete(links[0].id);
-		console.log(`Successfully removed user ${userId} from group ${groupId}`);
+		console.log(
+			`Successfully removed user ${userId} from group ${groupId}`,
+		);
 		return {success: true};
 	} catch (err) {
-		console.error(`Failed to remove user ${userId} from group ${groupId}:`, err);
+		console.error(
+			`Failed to remove user ${userId} from group ${groupId}:`,
+			err,
+		);
 		throw err;
 	}
 }
@@ -182,13 +196,15 @@ export async function addUserToStudyGroup(
 ): Promise<{success: boolean}> {
 	try {
 		// Check if the user is already in the group
-		const existingLinks = await pb.collection('user_studygroup').getFullList({
-			filter: `studygroup = "${groupId}" && user = "${userId}"`,
-		});
+		const existingLinks = await pb
+			.collection('user_studygroup')
+			.getFullList({
+				filter: `studygroup = "${groupId}" && user = "${userId}"`,
+			});
 
 		if (existingLinks.length > 0) {
 			console.warn(`User ${userId} is already in group ${groupId}`);
-			return {success: false}; // User already in group
+			return {success: false}; 
 		}
 
 		// Create a new link record
@@ -201,5 +217,23 @@ export async function addUserToStudyGroup(
 	} catch (err) {
 		console.error(`Failed to add user ${userId} to group ${groupId}:`, err);
 		throw err;
+	}
+}
+
+export async function isUserInStudyGroup(
+	groupId: string,
+	userId: string,
+): Promise<boolean> {
+	try {
+		const links = await pb.collection('user_studygroup').getFullList({
+			filter: `studygroup = "${groupId}" && user = "${userId}"`,
+		});
+		return links.length > 0;
+	} catch (err) {
+		console.error(
+			`Failed to check if user ${userId} is in group ${groupId}:`,
+			err,
+		);
+		return false;
 	}
 }
