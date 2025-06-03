@@ -1,6 +1,6 @@
 import {pb} from '../pocketbase';
 
-// PUBLIC API
+// PUBLIC API for our StudyGroup-Collection
 export async function getAllStudyGroups() {
 	try {
 		const studygroups = await pb.collection('studygroup').getFullList({
@@ -74,7 +74,6 @@ export function getUsersFromStudyGroup(group) {
 		.filter((user) => Boolean(user));
 }
 
-// CREATE a new study group and associated links
 export async function createStudyGroup({
 	name,
 	description,
@@ -169,16 +168,14 @@ export async function deleteUserFromStudyGroup(
 	userId: string,
 ): Promise<{success: boolean}> {
 	try {
-		// Find the link record for this user in the study group
 		const links = await pb.collection('user_studygroup').getFullList({
 			filter: `studygroup = "${groupId}" && user = "${userId}"`,
 		});
 
 		if (links.length === 0) {
-			return {success: false}; // No link found
+			return {success: false};
 		}
 
-		// Delete the first matching link
 		await pb.collection('user_studygroup').delete(links[0].id);
 		console.log(
 			`Successfully removed user ${userId} from group ${groupId}`,
@@ -207,7 +204,7 @@ export async function addUserToStudyGroup(
 
 		if (existingLinks.length > 0) {
 			console.warn(`User ${userId} is already in group ${groupId}`);
-			return {success: false}; // User already in group
+			return {success: false}; 
 		}
 
 		// Create a new link record
@@ -231,7 +228,7 @@ export async function isUserInStudyGroup(
 		const links = await pb.collection('user_studygroup').getFullList({
 			filter: `studygroup = "${groupId}" && user = "${userId}"`,
 		});
-		return links.length > 0; // Returns true if any links found
+		return links.length > 0;
 	} catch (err) {
 		console.error(
 			`Failed to check if user ${userId} is in group ${groupId}:`,
