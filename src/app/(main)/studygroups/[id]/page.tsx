@@ -1,22 +1,32 @@
-import { redirect } from 'next/navigation';
-import { getCurrentUserId } from '../../../../lib/getCurrentUserId';
-import { pb } from '../../../../lib/pocketbase';
+import {redirect} from 'next/navigation';
+import {getCurrentUserId} from '../../../../lib/getCurrentUserId';
+import {pb} from '../../../../lib/pocketbase';
 import StudyGroupClient from '../../../../components/StudyGroupClient';
 
-export default async function StudyGroupDetailPage({ params }: { params: { id: string } }) {
+interface StudyBuddyPageProps {
+	params: {
+		id: string;
+	};
+}
+
+export default async function StudyGroupDetailPage({
+	params,
+}: StudyBuddyPageProps) {
 	const userId = await getCurrentUserId();
 
 	if (!userId) {
 		return (
 			<div className="container mx-auto px-4 py-8">
 				<div className="bg-white shadow rounded-lg p-6">
-					<h1 className="text-2xl font-semibold">Please log in to continue</h1>
+					<h1 className="text-2xl font-semibold">
+						Please log in to continue
+					</h1>
 				</div>
 			</div>
 		);
 	}
 
-	const { id } = params;
+	const {id} = params;
 
 	if (!id) {
 		redirect('/studygroups');
@@ -30,11 +40,5 @@ export default async function StudyGroupDetailPage({ params }: { params: { id: s
 		filter: `studygroup = "${id}"`,
 	});
 
-	return (
-		<StudyGroupClient
-			userId={userId}
-			group={group}
-			events={events}
-		/>
-	);
+	return <StudyGroupClient userId={userId} group={group} events={events} />;
 }
