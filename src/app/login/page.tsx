@@ -8,10 +8,8 @@ export default async function Page() {
 
 	console.log('Records:', records);
 	return (
-		<div className="flex w-full items-center justify-center p-6 md:p-10">
-			<div className="w-full max-w-sm">
-				<LoginForm />
-			</div>
+		<div className="flex w-full items-center justify-center p-6 md:p-10 min-h-screen">
+				<LoginForm className='h-full w-full max-w-sm'/>
 		</div>
 	);
 }
