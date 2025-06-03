@@ -26,7 +26,7 @@ export default function StudyGroupsPage() {
         });
 
     return (
-        <div className="space-y-8 max-w-5xl mx-auto px-4"> {/* Padding hinzugefügt */}
+        <div className="space-y-8 max-w-5xl mx-auto px-4"> {/* Padding added */}
             <h1 className="text-5xl font-extrabold text-center">Study Groups</h1>
 
             <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
@@ -60,6 +60,7 @@ export default function StudyGroupsPage() {
                                 className="w-2"
                                 style={{ backgroundColor: group.color || '#E5E7EB' }}
                             />
+                            {/*  Group Container  */}
                             <div className="p-5 flex-1 min-w-60 max-w-600">
                                 <h2 className="text-xl font-bold text-blue-600 mb-2">{group.name}</h2>
                                 <p className="text-sm text-gray-600 mb-3">{group.description}</p>

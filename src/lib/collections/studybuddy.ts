@@ -3,16 +3,16 @@ import { getUsersByIds } from "./user";
 
 // Get all studybuddy user records (all buddies of all users)
 export async function getAllStudyBuddies() {
-	// Fetch all studybuddy links
-	const studybuddyLinks = await pb.collection('studybuddy').getFullList();
+  // Fetch all studybuddy links
+  const studybuddyLinks = await pb.collection('studybuddy').getFullList();
 
-	// Extract all unique user_b IDs
-	const userBIds = Array.from(
-		new Set(studybuddyLinks.map((link) => link.user_b).filter(Boolean)),
-	);
+  // Extract all unique user_b IDs
+  const userBIds = Array.from(
+    new Set(studybuddyLinks.map((link) => link.user_b).filter(Boolean)),
+  );
 
-	// Fetch user records for those IDs
-	return getUsersByIds(userBIds);
+  // Fetch user records for those IDs
+  return getUsersByIds(userBIds);
 }
 
 export async function getStudyBuddiesByUserId(userId: string) {
@@ -41,8 +41,8 @@ export async function getStudyBuddiesByUserId(userId: string) {
     // Fetch user records for those IDs
     const buddies = await getUsersByIds(buddyIds);
 
-	console.log(`Fetched ${buddies.length} buddies for user ${userId}`);
-	console.log(`Buddies: ${JSON.stringify(buddies, null, 2)}`);
+    console.log(`Fetched ${buddies.length} buddies for user ${userId}`);
+    console.log(`Buddies: ${JSON.stringify(buddies, null, 2)}`);
 
     return buddies;
   } catch (err) {
@@ -56,22 +56,22 @@ export async function removeStudyBuddy(
   userBId: string
 ) {
   try {
-	// Find the studybuddy link between userA and userB
-	const link = await pb.collection("studybuddy").getFirstListItem(
-	  `user_a = "${userAId}" && user_b = "${userBId}" || user_a = "${userBId}" && user_b = "${userAId}"`
-	);
+    // Find the studybuddy link between userA and userB
+    const link = await pb.collection("studybuddy").getFirstListItem(
+      `user_a = "${userAId}" && user_b = "${userBId}" || user_a = "${userBId}" && user_b = "${userAId}"`
+    );
 
-	if (!link) {
-	  console.warn(`No study buddy link found between ${userAId} and ${userBId}`);
-	  return false;
-	}
+    if (!link) {
+      console.warn(`No study buddy link found between ${userAId} and ${userBId}`);
+      return false;
+    }
 
-	// Delete the studybuddy link
-	await pb.collection("studybuddy").delete(link.id);
-	console.log(`Removed study buddy link between ${userAId} and ${userBId}`);
-	return true;
+    // Delete the studybuddy link
+    await pb.collection("studybuddy").delete(link.id);
+    console.log(`Removed study buddy link between ${userAId} and ${userBId}`);
+    return true;
   } catch (err) {
-	console.error(`Failed to remove study buddy between ${userAId} and ${userBId}:`, err);
-	return false;
+    console.error(`Failed to remove study buddy between ${userAId} and ${userBId}:`, err);
+    return false;
   }
 }

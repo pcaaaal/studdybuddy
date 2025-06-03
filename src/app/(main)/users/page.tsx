@@ -1,15 +1,21 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-
 'use client';
+import { getAllUsers } from '@/lib/collections/user';
 import { useEffect, useState } from 'react';
 
 export default function UsersPage() {
-    const [users, setUsers] = useState([]);
+    const [users, setUsers] = useState<any[]>([]);
 
     useEffect(() => {
-        fetch('http://localhost:3001/users')
-            .then(res => res.json())
-            .then(data => setUsers(data));
+        async function fetchUsers() {
+            try {
+                const data = await getAllUsers();
+                setUsers(data);
+            } catch (err) {
+                console.error("Error fetching users:", err);
+            }
+        }
+        fetchUsers();
     }, []);
 
     return (

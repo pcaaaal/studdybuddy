@@ -1,14 +1,14 @@
 'use client';
 
 import React from 'react';
-import {Switch} from '@/components/ui/switch';
-import {Card, CardHeader, CardTitle, CardContent} from '@/components/ui/card';
+import { Switch } from '@/components/ui/switch';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 
 interface GroupWithSchedule {
 	id: string;
 	name: string;
 	color: string;
-	schedule: {title: string; date: string; time: string}[];
+	schedule: { title: string; date: string; time: string }[];
 }
 
 interface GroupFilterProps {
@@ -48,7 +48,7 @@ export function GroupFilter({
 							>
 								<Switch
 									id={`switch-${group.id}`}
-									style={{backgroundColor: group.color}}
+									style={{ backgroundColor: group.color }}
 									checked={isActive}
 									onCheckedChange={() =>
 										onToggleGroup(group.id)
@@ -56,11 +56,10 @@ export function GroupFilter({
 								/>
 								<label
 									htmlFor={`switch-${group.id}`}
-									className={`text-sm font-medium ${
-										isActive
+									className={`text-sm font-medium ${isActive
 											? 'text-gray-900'
 											: 'text-gray-500'
-									}`}
+										}`}
 								>
 									{group.name}
 								</label>

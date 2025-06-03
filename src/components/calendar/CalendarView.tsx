@@ -1,8 +1,8 @@
 'use client';
 
-import React, {useState, useMemo} from 'react';
-import {Button} from '@/components/ui/button';
-import {Card, CardContent} from '@/components/ui/card';
+import React, { useState, useMemo } from 'react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 
 interface ScheduledEvent {
 	title: string;
@@ -22,7 +22,7 @@ interface CalendarViewProps {
 	activeGroupFilters: string[];
 }
 
-export function CalendarView({groups, activeGroupFilters}: CalendarViewProps) {
+export function CalendarView({ groups, activeGroupFilters }: CalendarViewProps) {
 	const [currentMonth, setCurrentMonth] = useState<number>(
 		new Date().getMonth(),
 	);
@@ -30,7 +30,6 @@ export function CalendarView({groups, activeGroupFilters}: CalendarViewProps) {
 		new Date().getFullYear(),
 	);
 
-	// How many days in a month
 	const getDaysInMonth = (year: number, month: number): number =>
 		new Date(year, month + 1, 0).getDate();
 
@@ -122,11 +121,11 @@ export function CalendarView({groups, activeGroupFilters}: CalendarViewProps) {
 					{/* Grid Cells */}
 					<div className="grid grid-cols-7 gap-2 text-sm">
 						{/* Empty slots up to first day */}
-						{Array.from({length: firstDayOfWeek}).map((_, idx) => (
+						{Array.from({ length: firstDayOfWeek }).map((_, idx) => (
 							<div key={`empty-${idx}`} className="h-28" />
 						))}
 
-						{Array.from({length: daysInMonth}).map((_, idx) => {
+						{Array.from({ length: daysInMonth }).map((_, idx) => {
 							const day = idx + 1;
 							const events = getEventsForDay(day);
 
@@ -142,11 +141,10 @@ export function CalendarView({groups, activeGroupFilters}: CalendarViewProps) {
 									className="border rounded-md p-2 h-28 text-left relative"
 								>
 									<div
-										className={`absolute top-1 right-2 flex items-center justify-center text-xs font-semibold ${
-											isToday
-												? 'bg-red-500 text-white rounded-full w-6 h-6'
-												: 'text-gray-400'
-										}`}
+										className={`absolute top-1 right-2 flex items-center justify-center text-xs font-semibold ${isToday
+											? 'bg-red-500 text-white rounded-full w-6 h-6'
+											: 'text-gray-400'
+											}`}
 									>
 										{day}
 									</div>
@@ -167,9 +165,9 @@ export function CalendarView({groups, activeGroupFilters}: CalendarViewProps) {
 												<div>
 													{evt.title.length > 10
 														? `${evt.title.slice(
-																0,
-																10,
-														  )}...`
+															0,
+															10,
+														)}...`
 														: evt.title}
 												</div>
 												<div className="text-[10px]">

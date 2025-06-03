@@ -1,14 +1,14 @@
 'use client';
 
-import React, {useState} from 'react';
-import {GroupFilter} from './GroupFilter';
-import {CalendarView, GroupWithSchedule} from './CalendarView';
+import React, { useState } from 'react';
+import { GroupFilter } from './GroupFilter';
+import { CalendarView, GroupWithSchedule } from './CalendarView';
 
 interface CalendarClientProps {
 	initialGroups: GroupWithSchedule[];
 }
 
-export default function CalendarClient({initialGroups}: CalendarClientProps) {
+export default function CalendarClient({ initialGroups }: CalendarClientProps) {
 	const [groups] = useState<GroupWithSchedule[]>(initialGroups);
 	const [activeGroupFilters, setActiveGroupFilters] = useState<string[]>(
 		initialGroups.map((g) => g.id),

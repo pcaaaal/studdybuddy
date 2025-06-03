@@ -1,4 +1,4 @@
-import {getStudyBuddiesByUserId} from '../../lib/collections/studybuddy';
+import { getStudyBuddiesByUserId } from '../../lib/collections/studybuddy';
 import {
 	getAllStudyGroups,
 	getLocationsFromStudyGroup,
@@ -20,9 +20,9 @@ import {
 	TableCell,
 } from '@/components/ui/table';
 import Image from 'next/image';
-import {getCurrentUserId} from '../../lib/getCurrentUserId';
-import {getUserByUserId} from '../../lib/collections/user';
-import {StudyGroupDialog} from '../../components/StudyGroupDialog';
+import { getCurrentUserId } from '../../lib/getCurrentUserId';
+import { getUserByUserId } from '../../lib/collections/user';
+import { StudyGroupDialog } from '../../components/StudyGroupDialog';
 
 function capitalize(str: string) {
 	return str.charAt(0).toUpperCase() + str.slice(1);
@@ -101,7 +101,7 @@ export default async function HomePage() {
 														?.id === user.id
 														? 'You'
 														: group?.expand?.leader
-																?.name || 'N/A'}
+															?.name || 'N/A'}
 												</TableCell>
 											</TableRow>
 										</StudyGroupDialog>
@@ -168,9 +168,9 @@ export default async function HomePage() {
 												key={group.id}
 												className="p-4 rounded shadow-md"
 												style={{
-													backgroundColor: `${group.color || '#f0f0f0'}80`, // Transparente Farbe (80 = 50% Deckkraft)
-													backdropFilter: 'blur(8px)', // Glas-Effekt
-													WebkitBackdropFilter: 'blur(8px)', // Für Safari
+													backgroundColor: `${group.color || '#f0f0f0'}80`,
+													backdropFilter: 'blur(8px)',
+													WebkitBackdropFilter: 'blur(8px)',
 												}}
 											>
 												<div className="flex justify-between items-start">

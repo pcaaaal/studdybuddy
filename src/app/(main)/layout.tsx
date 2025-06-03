@@ -34,7 +34,7 @@ export default function RootLayout({children}: {children: React.ReactNode}) {
 			<main className="min-h-view-full flex w-full flex-col items-center justify-center pt-24">
 				{children}
 			</main>
-			<Footer />
+			<Footer/>
 		</>
 	);
 }

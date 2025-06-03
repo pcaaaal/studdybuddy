@@ -12,14 +12,6 @@ import {
   CardTitle,
   CardContent,
 } from "@/components/ui/card";
-import {
-  Table,
-  TableHeader,
-  TableRow,
-  TableHead,
-  TableBody,
-  TableCell,
-} from "@/components/ui/table";
 
 export default async function ProfilePage() {
   const userId = await getCurrentUserId();
@@ -40,15 +32,13 @@ export default async function ProfilePage() {
   const myStudyGroups = await getStudyGroupsByUserId(userId);
   const myStudyBuddies = await getStudyBuddiesByUserId(userId);
 
-  // Funktion zum Verlassen einer Studiengruppe
   const handleLeaveGroup = async (groupId: string) => {
     try {
-      await deleteUserFromStudyGroup(userId, groupId); // Benutzer aus der Gruppe entfernen
+      await deleteUserFromStudyGroup(userId, groupId); 
       console.log(`Successfully left group with ID: ${groupId}`);
-      // Aktualisiere die Gruppenliste
       const updatedGroups = await getStudyGroupsByUserId(userId);
-      myStudyGroups.length = 0; // Bestehendes Array leeren
-      myStudyGroups.push(...updatedGroups); // Aktualisierte Gruppen hinzufügen
+      myStudyGroups.length = 0; 
+      myStudyGroups.push(...updatedGroups);
     } catch (error) {
       console.error(`Failed to leave group with ID: ${groupId}`, error);
     }
