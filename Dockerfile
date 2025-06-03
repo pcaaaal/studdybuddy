@@ -1,15 +1,19 @@
-# Dockerfile für Next.js
 FROM node:18
 
 # Arbeitsverzeichnis im Container
 WORKDIR /app
 
+# Nur package.json kopieren für besseres Caching
+COPY ./package*.json ./
+
 # Dependencies installieren
-COPY ./ ./
 RUN npm install
 
-# App builden
-RUN npm run dev
+# Rest der App kopieren
+COPY ./ .
 
-# Startbefehl
-CMD ["npm", "run", "start"]
+# Port freigeben
+EXPOSE 3000
+
+# Entwicklungsserver starten (zur Laufzeit, nicht beim Build)
+CMD ["npm", "run", "dev"]
