@@ -5,31 +5,31 @@ const pb = new PocketBase(process.env.NEXT_PUBLIC_POCKETBASE_URL);
 
 export async function GET() {
   try {
-    // Cookies aus der Anfrage laden
+    // Cookies on REQUESTS
     const cookieString = NextResponse.next().headers.get("cookie") || "";
     pb.authStore.loadFromCookie(cookieString);
 
-    // Authentifizierung prüfen
+    // Validate Authentication
     if (!pb.authStore.isValid) {
       return NextResponse.json({ error: "User is not authenticated" }, { status: 401 });
     }
 
-    // Authentifizierung aktualisieren
+    // Update Authentication
     await pb.collection("_pb_users_auth_").authRefresh();
     const user = pb.authStore.record;
 
-    // Überprüfen, ob der Benutzer existiert
+    // Check if user exists
     if (!user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    // Studiengruppen des Benutzers abrufen
+    // Getting StudyGroups of user 
     const groups = await pb.collection("user_studygroup").getFullList({
       filter: `user="${user.id}"`,
       expand: "studygroup",
     });
 
-    // Study Buddies des Benutzers abrufen
+    // Get StudyBuddies of user
     const buddies = await pb.collection("studybuddy").getFullList({
       filter: `user_a="${user.id}" || user_b="${user.id}"`,
       expand: "user_a,user_b",

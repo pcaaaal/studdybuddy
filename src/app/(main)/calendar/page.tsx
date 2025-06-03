@@ -1,6 +1,4 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-
-// app/calendar/page.tsx
 import React from 'react';
 import { getCurrentUserId } from '../../../lib/getCurrentUserId';
 import { getStudyGroupsByUserId } from '../../../lib/collections/studygroup';
@@ -37,10 +35,8 @@ export default async function CalendarPage() {
     );
   }
 
-  // 3. Fetch all study‐groups for this user
   const userGroups: any = await getStudyGroupsByUserId(userId);
 
-  // 4. For each group, fetch its events (with unique cancelToken) and build schedule[]
   const detailedGroups: GroupWithSchedule[] = await Promise.all(
     userGroups.map(async (group: any) => {
       const rawEvents: any = await getEventsByStudyGroupId(group.id);
@@ -48,7 +44,6 @@ export default async function CalendarPage() {
         const title = evt.title;
         const dt = new Date(evt.date);
         const isoDate = dt.toISOString().split('T')[0]; // 'YYYY-MM-DD'
-        // adjust hours/minutes if needed (e.g. timezone offset)
         const hours = dt.getHours().toString().padStart(2, '0');
         const minutes = dt.getMinutes().toString().padStart(2, '0');
         return {
@@ -67,7 +62,6 @@ export default async function CalendarPage() {
     }),
   );
 
-  // 5. Render the client component, passing detailedGroups as a prop
   return (
     <div className="container px-4 sm:px-8">
       <h1 className="text-5xl font-extrabold mb-4">Calendar</h1>

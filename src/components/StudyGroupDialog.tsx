@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 'use client';
 
 import {
@@ -8,8 +10,8 @@ import {
 	DialogTitle,
 	DialogDescription,
 } from '@/components/ui/dialog';
-import { useState, useEffect } from 'react';
-import { getTagById } from '@/lib/collections/tags'; // Importiere die Methode zum Abrufen der Tags
+import {useState, useEffect} from 'react';
+import {getTagById} from '@/lib/collections/tags'; // Importiere die Methode zum Abrufen der Tags
 
 export function StudyGroupDialog({
 	children,
@@ -23,7 +25,7 @@ export function StudyGroupDialog({
 
 	const locations =
 		group.expand?.location_studygroup_via_studygroup?.map(
-			(link: any) => link.expand?.location
+			(link: any) => link.expand?.location,
 		) || [];
 
 	// Tags laden, wenn die Komponente gerendert wird
@@ -31,7 +33,7 @@ export function StudyGroupDialog({
 		async function fetchTags() {
 			if (group.tags && group.tags.length > 0) {
 				const loadedTags = await Promise.all(
-					group.tags.map((tagId: string) => getTagById(tagId))
+					group.tags.map((tagId: string) => getTagById(tagId)),
 				);
 				setTags(loadedTags.map((tag) => tag.name)); // Extrahiere die Namen der Tags
 			}
