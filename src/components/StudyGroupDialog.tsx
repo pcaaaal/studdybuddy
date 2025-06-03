@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
 import {
@@ -9,7 +8,8 @@ import {
 	DialogTitle,
 	DialogDescription,
 } from '@/components/ui/dialog';
-import {useState} from 'react';
+import { useState, useEffect } from 'react';
+import { getTagById } from '@/lib/collections/tags'; // Importiere die Methode zum Abrufen der Tags
 
 export function StudyGroupDialog({
 	children,
@@ -19,8 +19,25 @@ export function StudyGroupDialog({
 	group: any;
 }) {
 	const [open, setOpen] = useState(false);
+	const [tags, setTags] = useState<string[]>([]); // Zustand für die geladenen Tags
 
-	const locations = group.expand?.locations || [];
+	const locations =
+		group.expand?.location_studygroup_via_studygroup?.map(
+			(link: any) => link.expand?.location
+		) || [];
+
+	// Tags laden, wenn die Komponente gerendert wird
+	useEffect(() => {
+		async function fetchTags() {
+			if (group.tags && group.tags.length > 0) {
+				const loadedTags = await Promise.all(
+					group.tags.map((tagId: string) => getTagById(tagId))
+				);
+				setTags(loadedTags.map((tag) => tag.name)); // Extrahiere die Namen der Tags
+			}
+		}
+		fetchTags();
+	}, [group.tags]);
 
 	return (
 		<Dialog open={open} onOpenChange={setOpen}>
@@ -34,8 +51,22 @@ export function StudyGroupDialog({
 				</DialogHeader>
 				<div className="mt-4 space-y-2">
 					<p>
-						<strong>Category:</strong> {group.category}
+						<strong>Category:</strong>
 					</p>
+					<div className="flex flex-wrap gap-2">
+						{tags.length > 0 ? (
+							tags.map((tag: string, index: number) => (
+								<span
+									key={index}
+									className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-sm"
+								>
+									{tag}
+								</span>
+							))
+						) : (
+							<span>Unknown</span>
+						)}
+					</div>
 					<p>
 						<strong>Leader:</strong>{' '}
 						{group.expand?.leader?.name || 'Unknown'}

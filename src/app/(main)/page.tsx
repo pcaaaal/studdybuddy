@@ -166,11 +166,11 @@ export default async function HomePage() {
 										>
 											<div
 												key={group.id}
-												className={`p-4 rounded`}
+												className="p-4 rounded shadow-md"
 												style={{
-													backgroundColor:
-														group.color ||
-														'#f0f0f0',
+													backgroundColor: `${group.color || '#f0f0f0'}80`, // Transparente Farbe (80 = 50% Deckkraft)
+													backdropFilter: 'blur(8px)', // Glas-Effekt
+													WebkitBackdropFilter: 'blur(8px)', // Für Safari
 												}}
 											>
 												<div className="flex justify-between items-start">
