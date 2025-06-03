@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import {pb} from '../pocketbase';
 
 // PUBLIC API
