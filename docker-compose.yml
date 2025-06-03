@@ -20,5 +20,5 @@ services:
       - "3000:3000"
     working_dir: /app
     volumes:
-      - ./nextjs-app:/app
+      - ./studdybuddy:/app
     command: npm run start
