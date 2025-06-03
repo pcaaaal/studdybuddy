@@ -1,0 +1,24 @@
+version: '3.8'
+
+services:
+  pocketbase:
+    build:
+      context: ./pocketbase
+    container_name: pocketbase
+    ports:
+      - "8090:8090"
+    volumes:
+      - ./pocketbase/pb_data:/pb_data
+    command: ["serve", "--dir", "/pb_data"]
+
+  nextjs:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: nextjs
+    ports:
+      - "3000:3000"
+    working_dir: /app
+    volumes:
+      - ./nextjs-app:/app
+    command: npm run start

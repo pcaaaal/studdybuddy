@@ -1,0 +1,13 @@
+name: uek-294
+services:
+  db:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    container_name: db
+    ports:
+      - 8090:8090
+    volumes:
+      - pb_data:/app/pb_data
+volumes:
+  pb_data:
