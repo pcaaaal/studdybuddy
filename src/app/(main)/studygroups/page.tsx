@@ -3,6 +3,7 @@
 
 import { getAllStudyGroups, getUsersFromStudyGroup } from '@/lib/collections/studygroup';
 import { useEffect, useState } from 'react';
+
 export default function StudyGroupsPage() {
     const [groups, setGroups] = useState<any[]>([]);
     const [search, setSearch] = useState('');
@@ -25,7 +26,7 @@ export default function StudyGroupsPage() {
         });
 
     return (
-        <div className="space-y-8 max-w-5xl mx-auto">
+        <div className="space-y-8 max-w-5xl mx-auto px-4"> {/* Padding hinzugefügt */}
             <h1 className="text-5xl font-extrabold text-center">Study Groups</h1>
 
             <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
